@@ -1,0 +1,65 @@
+# ── mplus-tracker configuration ───────────────────────────────────────────────
+#
+# Edit this file, then run:  docker-compose up --build
+#
+# All values below are also overridable via environment variables (see README).
+
+[raiderio]
+base_url      = "https://raider.io/api/v1"
+user_agent    = "mplus-tracker/0.1"
+max_retries   = 5
+base_backoff_ms = 1000   # 1 second
+max_backoff_ms  = 120000 # 2 minutes
+
+[storage]
+database_path = "/data/mplus.sqlite"
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[concurrency]
+max_concurrent_raiderio = 3
+
+
+# ── Guilds to track ────────────────────────────────────────────────────────────
+# Use POST /update/guild?region=us&realm=area-52&name=My%20Guild to pull members.
+
+[[guilds]]
+region = "us"
+realm  = "stormrage"
+name   = "seems good"
+
+# [[guilds]]
+# region = "us"
+# realm  = "stormrage"
+# name   = "Alt Guild"
+
+
+# ── Logical players (one person, multiple characters) ─────────────────────────
+# Characters listed here are seeded into the DB on every startup.
+# Use POST /update/character or POST /update/all to pull their run data.
+
+#[[players]]
+#id    = "player_ash"
+#label = "Ash"
+
+#[[players.characters]]
+#region = "us"
+#realm  = "area-52"
+#name   = "Ashmain"
+
+#[[players.characters]]
+#region = "us"
+#realm  = "area-52"
+#name   = "Ashalt"
+
+
+# [[players]]
+# id    = "player_bob"
+# label = "Bob"
+#
+# [[players.characters]]
+# region = "us"
+# realm  = "stormrage"
+# name   = "Bobmain"
