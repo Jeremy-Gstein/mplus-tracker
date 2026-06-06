@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPTracker API Docs</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d1117;
+  --bg2:      #161b22;
+  --bg3:      #21262d;
+  --bg4:      #30363d;
+  --border:   #30363d;
+  --border2:  #444c56;
+  --text:     #e6edf3;
+  --text2:    #8b949e;
+  --text3:    #6e7681;
+  --accent:   #58a6ff;
+  --green:    #3fb950;
+  --green-bg: rgba(63,185,80,0.1);
+  --orange:   #d29922;
+  --orange-bg:rgba(210,153,34,0.1);
+  --red:      #f85149;
+  --red-bg:   rgba(248,81,73,0.1);
+  --purple:   #bc8cff;
+  --purple-bg:rgba(188,140,255,0.1);
+  --cyan:     #39d0db;
+  --cyan-bg:  rgba(57,208,219,0.1);
+  --get:      #238636;
+  --get-bg:   rgba(35,134,54,0.15);
+  --post:     #bb6900;
+  --post-bg:  rgba(187,105,0,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ─── Layout ─── */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 0 0 40px;
+}
+
+.sidebar-logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg2);
+  z-index: 10;
+}
+
+.sidebar-logo h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.sidebar-logo .version {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+
+.nav-group { padding: 16px 0 0; }
+.nav-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 0 20px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text2);
+  transition: all 0.12s;
+  border-left: 2px solid transparent;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); border-left-color: var(--border2); }
+.nav-item.active { background: rgba(88,166,255,0.08); color: var(--accent); border-left-color: var(--accent); }
+
+.badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px;
+}
+.badge-get  { background: var(--get-bg);    color: #4ac26b; border: 1px solid rgba(74,194,107,0.3); }
+.badge-post { background: var(--post-bg);   color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+
+/* ─── Main ─── */
+.main {
+  padding: 0 48px 80px;
+  max-width: 960px;
+}
+
+/* ─── Hero ─── */
+.hero {
+  padding: 48px 0 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.hero h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.hero p { color: var(--text2); max-width: 600px; line-height: 1.7; }
+.hero-meta {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.hero-chip {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: var(--text2);
+}
+.hero-chip strong { color: var(--text); }
+
+/* ─── Section ─── */
+.section { margin-bottom: 16px; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.section-desc {
+  color: var(--text2);
+  font-size: 13px;
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+
+/* ─── Endpoint card ─── */
+.endpoint {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  scroll-margin-top: 20px;
+}
+
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+.endpoint-header:hover { background: var(--bg3); }
+
+.method {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 9px;
+  border-radius: 4px;
+  min-width: 52px;
+  text-align: center;
+}
+.method-get  { background: var(--get-bg);  color: #4ac26b; border: 1px solid rgba(74,194,107,0.3); }
+.method-post { background: var(--post-bg); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+
+.endpoint-path {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.path-param { color: var(--purple); }
+
+.endpoint-summary {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.chevron {
+  color: var(--text3);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+.endpoint.open .chevron { transform: rotate(90deg); }
+
+.endpoint-body {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 20px;
+}
+.endpoint.open .endpoint-body { display: block; }
+
+/* ─── Description ─── */
+.ep-desc {
+  color: var(--text2);
+  font-size: 13px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+/* ─── Params table ─── */
+.params-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+.params-table th {
+  text-align: left;
+  padding: 7px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+.params-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  vertical-align: top;
+}
+.params-table tr:last-child td { border-bottom: none; }
+
+.param-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.param-required {
+  font-size: 10px;
+  color: var(--red);
+  font-weight: 600;
+}
+.param-optional {
+  font-size: 10px;
+  color: var(--text3);
+}
+.param-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--purple);
+}
+.param-default {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+}
+.param-desc { color: var(--text2); font-size: 13px; }
+.param-enum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.enum-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--cyan);
+}
+
+/* ─── Code blocks ─── */
+.code-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text2);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.7;
+  position: relative;
+}
+
+.copy-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.copy-btn:hover { background: var(--bg4); color: var(--text); }
+.copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+/* ─── JSON syntax ─── */
+.jk { color: var(--accent); }
+.js { color: var(--green); }
+.jn { color: var(--orange); }
+.jb { color: var(--red); }
+.jl { color: var(--text3); }
+
+/* ─── Response codes ─── */
+.resp-codes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  margin-top: 16px;
+}
+.resp-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.resp-2xx { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+.resp-4xx { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(210,153,34,0.3); }
+.resp-5xx { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+
+/* ─── Info box ─── */
+.info-box {
+  background: rgba(88,166,255,0.07);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+.info-box strong { color: var(--accent); }
+
+.warn-box {
+  background: var(--orange-bg);
+  border: 1px solid rgba(210,153,34,0.3);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+.warn-box strong { color: var(--orange); }
+
+/* ─── Schema ─── */
+.schema-grid {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+.schema-row {
+  display: grid;
+  grid-template-columns: 180px 120px 1fr;
+  gap: 12px;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+.schema-row:nth-child(odd) { background: var(--bg3); }
+.schema-field { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+.schema-type  { font-family: 'JetBrains Mono', monospace; color: var(--purple); }
+.schema-note  { color: var(--text2); }
+
+/* ─── Divider ─── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0 20px;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ─── Sidebar ─── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>MPTracker API</h1>
+    <div class="version">v0.1 · SQLite · Axum</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <div class="nav-item active" onclick="scrollTo('intro')">Introduction</div>
+    <div class="nav-item" onclick="scrollTo('errors')">Errors & Scopes</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">System</div>
+    <div class="nav-item" onclick="scrollTo('health')">
+      <span class="badge badge-get">GET</span> Health
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Updates</div>
+    <div class="nav-item" onclick="scrollTo('update-guild')">
+      <span class="badge badge-post">POST</span> Update Guild
+    </div>
+    <div class="nav-item" onclick="scrollTo('update-character')">
+      <span class="badge badge-post">POST</span> Update Character
+    </div>
+    <div class="nav-item" onclick="scrollTo('update-all')">
+      <span class="badge badge-post">POST</span> Update All
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Queries</div>
+    <div class="nav-item" onclick="scrollTo('character-keys')">
+      <span class="badge badge-get">GET</span> Character Keys
+    </div>
+    <div class="nav-item" onclick="scrollTo('player-keys')">
+      <span class="badge badge-get">GET</span> Player Keys
+    </div>
+    <div class="nav-item" onclick="scrollTo('guild-roster')">
+      <span class="badge badge-get">GET</span> Guild Roster
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Debug</div>
+    <div class="nav-item" onclick="scrollTo('debug-stats')">
+      <span class="badge badge-get">GET</span> DB Stats
+    </div>
+    <div class="nav-item" onclick="scrollTo('debug-runs')">
+      <span class="badge badge-get">GET</span> All Runs
+    </div>
+    <div class="nav-item" onclick="scrollTo('debug-guild-runs')">
+      <span class="badge badge-get">GET</span> Guild Runs
+    </div>
+    <div class="nav-item" onclick="scrollTo('debug-characters')">
+      <span class="badge badge-get">GET</span> All Characters
+    </div>
+    <div class="nav-item" onclick="scrollTo('debug-hash')">
+      <span class="badge badge-get">GET</span> Hash Check
+    </div>
+  </div>
+</nav>
+
+<!-- ─── Main ─── -->
+<div class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="intro">
+    <h1>MPTracker API</h1>
+    <p>REST API for tracking Mythic+ keystones run by guild members. Queries Raider.IO for character and guild data, stores runs in SQLite, and exposes counts and history for external consumers (WeakAuras, Discord bots, dashboards).</p>
+    <div class="hero-meta">
+      <div class="hero-chip">Base URL: <strong>http://localhost:8080</strong></div>
+      <div class="hero-chip">Format: <strong>application/json</strong></div>
+      <div class="hero-chip">Auth: <strong>none</strong></div>
+      <div class="hero-chip">Storage: <strong>SQLite (WAL)</strong></div>
+    </div>
+  </div>
+
+  <!-- ERRORS & SCOPES -->
+  <div class="section" id="errors">
+    <div class="section-header">
+      <div class="section-title">Errors &amp; Common Concepts</div>
+    </div>
+
+    <p class="section-desc">All error responses use the same envelope. The <code>scope</code> parameter controls the time window for all query endpoints and is region-aware for weekly resets.</p>
+
+    <div class="info-box">
+      <strong>Error envelope</strong> — every non-2xx response returns:
+      <div class="code-block" style="margin-top:8px">{
+  <span class="jk">"error"</span>: <span class="js">"Missing `realm` parameter"</span>,
+  <span class="jk">"code"</span>:  <span class="jn">400</span>
+}</div>
+    </div>
+
+    <div class="params-label">Scope values</div>
+    <table class="params-table">
+      <thead><tr><th>Value</th><th>Window</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="param-type">today</span></td>
+          <td class="param-desc">UTC midnight → now</td>
+          <td class="param-desc">Calendar day in UTC</td>
+        </tr>
+        <tr>
+          <td><span class="param-type">week</span></td>
+          <td class="param-desc">Last weekly reset → now</td>
+          <td class="param-desc">NA: Tue 15:00 UTC · EU: Wed 07:00 UTC. Pass <code>region=eu</code> to use EU reset.</td>
+        </tr>
+        <tr>
+          <td><span class="param-type">alltime</span></td>
+          <td class="param-desc">Epoch → now</td>
+          <td class="param-desc">Default when scope is omitted</td>
+        </tr>
+        <tr>
+          <td><span class="param-type">custom</span></td>
+          <td class="param-desc"><code>from</code> → <code>to</code></td>
+          <td class="param-desc">Requires both <code>from</code> and <code>to</code> as RFC3339 strings</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="params-label">Deduplication</div>
+    <p class="ep-desc">Every run is assigned a deterministic <strong>hash</strong> derived from region, realm, character name, dungeon, level, timestamp, and source run ID. <code>INSERT … ON CONFLICT (hash) DO NOTHING</code> means re-crawling a character never creates duplicate rows — only genuinely new runs are inserted.</p>
+
+    <div class="params-label">Stale-crawl skip</div>
+    <p class="ep-desc">When updating a guild, members whose Raider.IO <code>last_crawled_at</code> is within the last 3 months are skipped for individual key updates (they are still upserted for roster tracking). This dramatically reduces rate-limit pressure on large guilds.</p>
+  </div>
+
+  <!-- ─── HEALTH ─── -->
+  <div class="section" id="health">
+    <div class="section-header"><div class="section-title">System</div></div>
+
+    <div class="endpoint open" id="ep-health">
+      <div class="endpoint-header" onclick="toggle('ep-health')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/health</span>
+        <span class="endpoint-summary">Server liveness check</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Returns 200 and basic build info when the server is alive. Use this to verify connectivity before making data calls.</p>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+        </div>
+
+        <div class="code-label">Response</div>
+        <div class="code-block">{
+  <span class="jk">"status"</span>:  <span class="js">"ok"</span>,
+  <span class="jk">"version"</span>: <span class="js">"0.1.0"</span>
+}</div>
+
+        <div class="code-label">Example <button class="copy-btn" onclick="copyText(this, 'curl http://localhost:8080/health')">copy</button></div>
+        <div class="code-block">curl http://localhost:8080/health</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── UPDATES ─── -->
+  <div class="section" id="update-guild">
+    <div class="section-header"><div class="section-title">Updates</div></div>
+    <p class="section-desc">Update endpoints pull fresh data from Raider.IO and persist it to the local database. All updates are idempotent — re-running them only inserts genuinely new runs.</p>
+
+    <!-- POST /update/guild -->
+    <div class="endpoint" id="ep-update-guild">
+      <div class="endpoint-header" onclick="toggle('ep-update-guild')">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/update/guild</span>
+        <span class="endpoint-summary">Sync guild roster + queue member key updates</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Fetches the guild profile from Raider.IO, upserts all members into the <code>characters</code> table, and queues individual key updates for members whose Raider.IO profile is stale (older than 3 months). Members crawled recently are upserted to keep the roster current but their key fetch is skipped.</p>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="param-name">region</span></td>
+              <td><span class="param-type">string</span></td>
+              <td><span class="param-required">required</span></td>
+              <td class="param-desc">WoW region — <span class="enum-val">us</span> <span class="enum-val">eu</span> <span class="enum-val">kr</span> <span class="enum-val">tw</span></td>
+            </tr>
+            <tr>
+              <td><span class="param-name">realm</span></td>
+              <td><span class="param-type">string</span></td>
+              <td><span class="param-required">required</span></td>
+              <td class="param-desc">Realm name, e.g. <code>Stormrage</code></td>
+            </tr>
+            <tr>
+              <td><span class="param-name">name</span></td>
+              <td><span class="param-type">string</span></td>
+              <td><span class="param-required">required</span></td>
+              <td class="param-desc">Guild name, e.g. <code>Seems Good</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+          <span class="resp-code resp-4xx">400 Bad Request</span>
+          <span class="resp-code resp-5xx">500 Server Error</span>
+        </div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note">Unique ID for this request</span></div>
+          <div class="schema-row"><span class="schema-field">guild.region</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
+          <div class="schema-row"><span class="schema-field">guild.realm</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
+          <div class="schema-row"><span class="schema-field">guild.name</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
+          <div class="schema-row"><span class="schema-field">members_added</span><span class="schema-type">integer</span><span class="schema-note">New characters inserted this run</span></div>
+          <div class="schema-row"><span class="schema-field">members_updated</span><span class="schema-type">integer</span><span class="schema-note">Existing characters refreshed</span></div>
+          <div class="schema-row"><span class="schema-field">members_skipped_fresh</span><span class="schema-type">integer</span><span class="schema-note">Members skipped — crawled by RIO recently</span></div>
+        </div>
+
+        <div class="code-label">Example response</div>
+        <div class="code-block">{
+  <span class="jk">"request_id"</span>:           <span class="js">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>,
+  <span class="jk">"guild"</span>: {
+    <span class="jk">"region"</span>: <span class="js">"us"</span>,
+    <span class="jk">"realm"</span>:  <span class="js">"Stormrage"</span>,
+    <span class="jk">"name"</span>:   <span class="js">"Seems Good"</span>
+  },
+  <span class="jk">"members_added"</span>:         <span class="jn">3</span>,
+  <span class="jk">"members_updated"</span>:       <span class="jn">412</span>,
+  <span class="jk">"members_skipped_fresh"</span>: <span class="jn">103</span>
+}</div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST 'http://localhost:8080/update/guild?region=us&realm=Stormrage&name=Seems%20Good'`)">copy</button></div>
+        <div class="code-block">curl -X POST 'http://localhost:8080/update/guild?region=us&amp;realm=Stormrage&amp;name=Seems%20Good'</div>
+      </div>
+    </div>
+
+    <!-- POST /update/character -->
+    <div class="endpoint" id="ep-update-character">
+      <div class="endpoint-header" onclick="toggle('ep-update-character')">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/update/character</span>
+        <span class="endpoint-summary">Sync one character's recent runs from Raider.IO</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Fetches <code>mythic_plus_recent_runs</code> for the given character from Raider.IO and inserts any new runs into the database. Existing runs (identified by hash) are silently skipped — the count is reflected in <code>runs_ignored</code>.</p>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">WoW region</td></tr>
+            <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">Character realm</td></tr>
+            <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">Character name</td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+          <span class="resp-code resp-4xx">400 Bad Request</span>
+          <span class="resp-code resp-5xx">500 Server Error</span>
+        </div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note">Unique ID for this request</span></div>
+          <div class="schema-row"><span class="schema-field">character.region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">character.realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">character.name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">runs_inserted</span><span class="schema-type">integer</span><span class="schema-note">New runs written to DB this call</span></div>
+          <div class="schema-row"><span class="schema-field">runs_ignored</span><span class="schema-type">integer</span><span class="schema-note">Runs already in DB (hash collision — not duplicates)</span></div>
+          <div class="schema-row"><span class="schema-field">rate_limited</span><span class="schema-type">boolean</span><span class="schema-note">Always false — rate limit handled internally via retry/backoff</span></div>
+        </div>
+
+        <div class="code-label">Example response</div>
+        <div class="code-block">{
+  <span class="jk">"request_id"</span>:   <span class="js">"c3d4e5f6-a1b2-7890-cdef-123456789abc"</span>,
+  <span class="jk">"character"</span>: {
+    <span class="jk">"region"</span>: <span class="js">"us"</span>,
+    <span class="jk">"realm"</span>:  <span class="js">"Stormrage"</span>,
+    <span class="jk">"name"</span>:   <span class="js">"Duhva"</span>
+  },
+  <span class="jk">"runs_inserted"</span>: <span class="jn">4</span>,
+  <span class="jk">"runs_ignored"</span>:  <span class="jn">16</span>,
+  <span class="jk">"rate_limited"</span>:  <span class="jb">false</span>
+}</div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST 'http://localhost:8080/update/character?region=us&realm=Stormrage&name=Duhva'`)">copy</button></div>
+        <div class="code-block">curl -X POST 'http://localhost:8080/update/character?region=us&amp;realm=Stormrage&amp;name=Duhva'</div>
+      </div>
+    </div>
+
+    <!-- POST /update/all -->
+    <div class="endpoint" id="ep-update-all">
+      <div class="endpoint-header" onclick="toggle('ep-update-all')">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/update/all</span>
+        <span class="endpoint-summary">Sync all known characters concurrently</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="warn-box"><strong>⚠ High load:</strong> This triggers a Raider.IO fetch for every character in the database, bounded by the semaphore concurrency limit in <code>config.toml</code>. On large guilds this takes several minutes and burns significant rate-limit budget.</div>
+
+        <p class="ep-desc">Spawns a Tokio task per character, bounded by the shared semaphore. Returns aggregate counts when all tasks complete. Individual failures are collected into <code>errors</code> and do not abort the batch.</p>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+          <span class="resp-code resp-5xx">500 Server Error</span>
+        </div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">total_characters</span><span class="schema-type">integer</span><span class="schema-note">Total characters attempted</span></div>
+          <div class="schema-row"><span class="schema-field">updated_ok</span><span class="schema-type">integer</span><span class="schema-note">Successfully fetched + synced</span></div>
+          <div class="schema-row"><span class="schema-field">failed</span><span class="schema-type">integer</span><span class="schema-note">Characters that errored (network, RIO 404, etc.)</span></div>
+          <div class="schema-row"><span class="schema-field">errors</span><span class="schema-type">string[]</span><span class="schema-note">Error messages for each failure</span></div>
+        </div>
+
+        <div class="code-label">Example response</div>
+        <div class="code-block">{
+  <span class="jk">"request_id"</span>:       <span class="js">"f1e2d3c4-b5a6-0987-fedc-ba9876543210"</span>,
+  <span class="jk">"total_characters"</span>: <span class="jn">518</span>,
+  <span class="jk">"updated_ok"</span>:       <span class="jn">515</span>,
+  <span class="jk">"failed"</span>:           <span class="jn">3</span>,
+  <span class="jk">"errors"</span>: [
+    <span class="js">"Oldchar: RIO returned 404"</span>,
+    <span class="js">"Xfer: request timeout after 10s"</span>,
+    <span class="js">"Bankalt: RIO returned 404"</span>
+  ]
+}</div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, 'curl -X POST http://localhost:8080/update/all')">copy</button></div>
+        <div class="code-block">curl -X POST http://localhost:8080/update/all</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── QUERIES ─── -->
+  <div class="section" id="character-keys">
+    <div class="section-header"><div class="section-title">Queries</div></div>
+    <p class="section-desc">Read-only endpoints for fetching run counts and roster data. The <code>scope</code> parameter controls the time window. Weekly reset boundaries are region-aware (NA vs EU).</p>
+
+    <!-- GET /character/:region/:realm/:name/keys -->
+    <div class="endpoint" id="ep-character-keys">
+      <div class="endpoint-header" onclick="toggle('ep-character-keys')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/character/<span class="path-param">:region</span>/<span class="path-param">:realm</span>/<span class="path-param">:name</span>/keys</span>
+        <span class="endpoint-summary">Run count for a single character</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Returns the number of Mythic+ runs completed by the character within the requested time window. The character must already exist in the local database (run <code>POST /update/character</code> or <code>POST /update/guild</code> first).</p>
+
+        <div class="params-label">Path parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td class="param-desc">WoW region (<code>us</code>, <code>eu</code>, …)</td></tr>
+            <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td class="param-desc">Realm slug, e.g. <code>Stormrage</code></td></tr>
+            <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td class="param-desc">Character name (case-sensitive as stored)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="param-name">scope</span></td>
+              <td><span class="param-type">string</span></td>
+              <td><span class="param-default">alltime</span></td>
+              <td class="param-desc">
+                Time window
+                <div class="param-enum">
+                  <span class="enum-val">today</span>
+                  <span class="enum-val">week</span>
+                  <span class="enum-val">alltime</span>
+                  <span class="enum-val">custom</span>
+                </div>
+              </td>
+            </tr>
+            <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">0</span></td><td class="param-desc">Only count runs at or above this key level</td></tr>
+            <tr><td><span class="param-name">from</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
+            <tr><td><span class="param-name">to</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+          <span class="resp-code resp-4xx">404 Not Found</span>
+          <span class="resp-code resp-4xx">400 Bad Request</span>
+        </div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">character.region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">character.realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">character.name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">scope</span><span class="schema-type">string</span><span class="schema-note">Resolved scope name</span></div>
+          <div class="schema-row"><span class="schema-field">from</span><span class="schema-type">string (RFC3339)</span><span class="schema-note">Actual window start used</span></div>
+          <div class="schema-row"><span class="schema-field">to</span><span class="schema-type">string (RFC3339)</span><span class="schema-note">Actual window end used</span></div>
+          <div class="schema-row"><span class="schema-field">min_level</span><span class="schema-type">integer</span><span class="schema-note">Filter applied</span></div>
+          <div class="schema-row"><span class="schema-field">count</span><span class="schema-type">integer</span><span class="schema-note">Number of qualifying runs</span></div>
+        </div>
+
+        <div class="code-label">Example response</div>
+        <div class="code-block">{
+  <span class="jk">"character"</span>: { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Duhva"</span> },
+  <span class="jk">"scope"</span>:     <span class="js">"week"</span>,
+  <span class="jk">"from"</span>:      <span class="js">"2026-05-27T15:00:00Z"</span>,
+  <span class="jk">"to"</span>:        <span class="js">"2026-06-03T21:44:00Z"</span>,
+  <span class="jk">"min_level"</span>: <span class="jn">10</span>,
+  <span class="jk">"count"</span>:     <span class="jn">8</span>
+}</div>
+
+        <div class="code-label">Example requests <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=week&min_level=10'`)">copy</button></div>
+        <div class="code-block">curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=week&min_level=10'
+curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=today'
+curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=2026-06-01T00:00:00Z&to=2026-06-03T23:59:59Z'</div>
+      </div>
+    </div>
+
+    <!-- GET /player/:player_id/keys -->
+    <div class="endpoint" id="ep-player-keys">
+      <div class="endpoint-header" onclick="toggle('ep-player-keys')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/player/<span class="path-param">:player_id</span>/keys</span>
+        <span class="endpoint-summary">Aggregated run count across all characters for a player</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Players are logical owners of one or more characters, defined in <code>config.toml</code> and seeded at startup. This endpoint sums runs across all linked characters for the requested window — useful for tracking one real person who plays multiple alts.</p>
+
+        <div class="params-label">Path parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">player_id</span></td><td><span class="param-type">string</span></td><td class="param-desc">Player ID as defined in <code>config.toml</code>, e.g. <code>player_ash</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><span class="param-default">alltime</span></td><td class="param-desc">Same values as character keys endpoint</td></tr>
+            <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">0</span></td><td class="param-desc">Minimum key level to count</td></tr>
+            <tr><td><span class="param-name">from</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
+            <tr><td><span class="param-name">to</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+          <span class="resp-code resp-4xx">404 Not Found</span>
+        </div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">player_id</span><span class="schema-type">string</span><span class="schema-note">Echoed from path</span></div>
+          <div class="schema-row"><span class="schema-field">label</span><span class="schema-type">string</span><span class="schema-note">Human-readable name from config</span></div>
+          <div class="schema-row"><span class="schema-field">scope</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">from</span><span class="schema-type">string (RFC3339)</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">to</span><span class="schema-type">string (RFC3339)</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">min_level</span><span class="schema-type">integer</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">count</span><span class="schema-type">integer</span><span class="schema-note">Sum across all linked characters</span></div>
+        </div>
+
+        <div class="code-label">Example response</div>
+        <div class="code-block">{
+  <span class="jk">"player_id"</span>: <span class="js">"player_ash"</span>,
+  <span class="jk">"label"</span>:     <span class="js">"Ash"</span>,
+  <span class="jk">"scope"</span>:     <span class="js">"week"</span>,
+  <span class="jk">"from"</span>:      <span class="js">"2026-05-27T15:00:00Z"</span>,
+  <span class="jk">"to"</span>:        <span class="js">"2026-06-03T21:44:00Z"</span>,
+  <span class="jk">"min_level"</span>: <span class="jn">0</span>,
+  <span class="jk">"count"</span>:     <span class="jn">14</span>
+}</div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/player/player_ash/keys?scope=week'`)">copy</button></div>
+        <div class="code-block">curl 'http://localhost:8080/player/player_ash/keys?scope=week'</div>
+      </div>
+    </div>
+
+    <!-- GET /guild/:region/:realm/:name/roster -->
+    <div class="endpoint" id="ep-guild-roster">
+      <div class="endpoint-header" onclick="toggle('ep-guild-roster')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/guild/<span class="path-param">:region</span>/<span class="path-param">:realm</span>/<span class="path-param">:name</span>/roster</span>
+        <span class="endpoint-summary">All characters linked to a guild in the local DB</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Returns every character in the local database whose <code>guild_name</code> and <code>guild_realm</code> match the requested guild. This is the locally-known roster — run <code>POST /update/guild</code> to sync it from Raider.IO first.</p>
+
+        <div class="params-label">Path parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td class="param-desc">WoW region</td></tr>
+            <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td class="param-desc">Guild realm</td></tr>
+            <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td class="param-desc">Guild name</td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes">
+          <span class="resp-code resp-2xx">200 OK</span>
+        </div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">guild.region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">guild.realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">guild.name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">members[].region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">members[].realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">members[].name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">members[].guild_name</span><span class="schema-type">string|null</span><span class="schema-note"></span></div>
+        </div>
+
+        <div class="code-label">Example response</div>
+        <div class="code-block">{
+  <span class="jk">"guild"</span>: { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Seems Good"</span> },
+  <span class="jk">"members"</span>: [
+    { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Duhva"</span>,  <span class="jk">"guild_name"</span>: <span class="js">"Seems Good"</span> },
+    { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Shadra"</span>, <span class="jk">"guild_name"</span>: <span class="js">"Seems Good"</span> }
+  ]
+}</div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/guild/us/Stormrage/Seems%20Good/roster'`)">copy</button></div>
+        <div class="code-block">curl 'http://localhost:8080/guild/us/Stormrage/Seems%20Good/roster'</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DEBUG ─── -->
+  <div class="section" id="debug-stats">
+    <div class="section-header"><div class="section-title">Debug Endpoints</div></div>
+    <p class="section-desc">These endpoints expose raw DB contents for development, debugging, and verifying data integrity. They are not intended for production consumers — consider restricting them behind a reverse-proxy or firewall rule in prod.</p>
+    <div class="warn-box"><strong>⚠ Not for production consumers.</strong> These endpoints do full table scans and return potentially large payloads. Protect with a firewall or internal-only routing in production.</div>
+
+    <!-- GET /debug/stats -->
+    <div class="endpoint" id="ep-debug-stats">
+      <div class="endpoint-header" onclick="toggle('ep-debug-stats')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/debug/stats</span>
+        <span class="endpoint-summary">Aggregate database statistics and distributions</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Returns row counts, today/week run totals, dungeon distribution, key level histogram, and top-20 characters by run count. Useful as a health dashboard and sanity check after crawls.</p>
+
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">total_characters</span><span class="schema-type">integer</span><span class="schema-note">Rows in characters table</span></div>
+          <div class="schema-row"><span class="schema-field">total_runs</span><span class="schema-type">integer</span><span class="schema-note">Rows in runs table</span></div>
+          <div class="schema-row"><span class="schema-field">runs_today</span><span class="schema-type">integer</span><span class="schema-note">completed_at ≥ UTC midnight</span></div>
+          <div class="schema-row"><span class="schema-field">runs_this_week</span><span class="schema-type">integer</span><span class="schema-note">completed_at ≥ now - 7 days</span></div>
+          <div class="schema-row"><span class="schema-field">runs_by_dungeon[]</span><span class="schema-type">object[]</span><span class="schema-note">{ dungeon: string, count: integer }</span></div>
+          <div class="schema-row"><span class="schema-field">runs_by_keylevel[]</span><span class="schema-type">object[]</span><span class="schema-note">{ key_level: integer, count: integer }</span></div>
+          <div class="schema-row"><span class="schema-field">top_characters[]</span><span class="schema-type">object[]</span><span class="schema-note">{ name, realm, region, run_count } — top 20</span></div>
+        </div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, 'curl http://localhost:8080/debug/stats')">copy</button></div>
+        <div class="code-block">curl http://localhost:8080/debug/stats</div>
+      </div>
+    </div>
+
+    <!-- GET /debug/runs -->
+    <div class="endpoint" id="ep-debug-runs">
+      <div class="endpoint-header" onclick="toggle('ep-debug-runs')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/debug/runs</span>
+        <span class="endpoint-summary">Paginated run list with character join</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Returns runs across all characters, newest first, with character info joined in. Use this to verify crawls are picking up new runs and that deduplication is working.</p>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><span class="param-default">alltime</span></td><td class="param-desc">Time window</td></tr>
+            <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">0</span></td><td class="param-desc">Minimum key level filter</td></tr>
+            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td><span class="param-default">us</span></td><td class="param-desc">Used to resolve weekly reset when scope=week</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">200</span></td><td class="param-desc">Max rows returned (hard cap: 1000)</td></tr>
+            <tr><td><span class="param-name">from</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required with <code>scope=custom</code></td></tr>
+            <tr><td><span class="param-name">to</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required with <code>scope=custom</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
+
+        <div class="code-label">Response — array of run objects</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">integer</span><span class="schema-note">DB row ID</span></div>
+          <div class="schema-row"><span class="schema-field">character_name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">dungeon_short</span><span class="schema-type">string</span><span class="schema-note">RIO short name e.g. <code>MOTS</code>, <code>GB</code></span></div>
+          <div class="schema-row"><span class="schema-field">key_level</span><span class="schema-type">integer</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">completed_at</span><span class="schema-type">string (RFC3339)</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">within_time</span><span class="schema-type">boolean</span><span class="schema-note">True = timed / deplete = false</span></div>
+          <div class="schema-row"><span class="schema-field">url</span><span class="schema-type">string|null</span><span class="schema-note">Raider.IO run URL</span></div>
+          <div class="schema-row"><span class="schema-field">hash</span><span class="schema-type">string</span><span class="schema-note">Dedup hash — unique per run</span></div>
+        </div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/debug/runs?scope=week&min_level=10&limit=50'`)">copy</button></div>
+        <div class="code-block">curl 'http://localhost:8080/debug/runs?scope=week&min_level=10&limit=50'</div>
+      </div>
+    </div>
+
+    <!-- GET /debug/runs/guild -->
+    <div class="endpoint" id="ep-debug-guild-runs">
+      <div class="endpoint-header" onclick="toggle('ep-debug-guild-runs')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/debug/runs/guild</span>
+        <span class="endpoint-summary">Runs filtered to a specific guild's members</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Same shape as <code>/debug/runs</code> but filters to characters whose <code>guild_name</code> and <code>guild_realm</code> match the request. Great for confirming your guild crawl captured the right data.</p>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>—</td><td class="param-desc">Guild realm</td></tr>
+            <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>—</td><td class="param-desc">Guild name</td></tr>
+            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">us</span></td><td class="param-desc">Used for weekly reset boundary</td></tr>
+            <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">alltime</span></td><td class="param-desc">Time window</td></tr>
+            <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">0</span></td><td class="param-desc">Minimum key level</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">500</span></td><td class="param-desc">Max rows (hard cap: 2000)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">400 Bad Request</span></div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/debug/runs/guild?realm=Stormrage&name=Seems%20Good&scope=week'`)">copy</button></div>
+        <div class="code-block">curl 'http://localhost:8080/debug/runs/guild?realm=Stormrage&name=Seems%20Good&scope=week'</div>
+      </div>
+    </div>
+
+    <!-- GET /debug/characters -->
+    <div class="endpoint" id="ep-debug-characters">
+      <div class="endpoint-header" onclick="toggle('ep-debug-characters')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/debug/characters</span>
+        <span class="endpoint-summary">All characters with run counts</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Full dump of the <code>characters</code> table with <code>LEFT JOIN</code> run counts. Ordered by run count descending. Use to spot characters with unexpectedly zero runs or verify a guild sync populated the right members.</p>
+
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
+
+        <div class="code-label">Response — array of character objects</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">integer</span><span class="schema-note">DB row ID</span></div>
+          <div class="schema-row"><span class="schema-field">region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">guild_name</span><span class="schema-type">string|null</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">guild_realm</span><span class="schema-type">string|null</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">last_seen</span><span class="schema-type">string|null (RFC3339)</span><span class="schema-note">Last upsert timestamp</span></div>
+          <div class="schema-row"><span class="schema-field">run_count</span><span class="schema-type">integer</span><span class="schema-note">Total runs for this character in DB</span></div>
+        </div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, 'curl http://localhost:8080/debug/characters')">copy</button></div>
+        <div class="code-block">curl http://localhost:8080/debug/characters</div>
+      </div>
+    </div>
+
+    <!-- GET /debug/hash-check -->
+    <div class="endpoint" id="ep-debug-hash">
+      <div class="endpoint-header" onclick="toggle('ep-debug-hash')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/debug/hash-check</span>
+        <span class="endpoint-summary">Verify whether a specific run hash is in the database</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Point lookup against the <code>runs.hash</code> unique index. Use this to confirm that a specific run you expected to be inserted actually made it in, or to verify that re-running an update would correctly skip a known run as a duplicate.</p>
+
+        <div class="params-label">Query parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">hash</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">The run hash to look up (from <code>/debug/runs</code> <code>hash</code> field)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
+
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">hash</span><span class="schema-type">string</span><span class="schema-note">Echoed from query param</span></div>
+          <div class="schema-row"><span class="schema-field">exists</span><span class="schema-type">boolean</span><span class="schema-note">True = run is in DB · False = would be a new insert</span></div>
+        </div>
+
+        <div class="code-label">Example response — exists</div>
+        <div class="code-block">{ <span class="jk">"hash"</span>: <span class="js">"sha256:abc123..."</span>, <span class="jk">"exists"</span>: <span class="jb">true</span>  }</div>
+
+        <div class="code-label">Example response — not found</div>
+        <div class="code-block">{ <span class="jk">"hash"</span>: <span class="js">"sha256:xyz789..."</span>, <span class="jk">"exists"</span>: <span class="jb">false</span> }</div>
+
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/debug/hash-check?hash=sha256:abc123'`)">copy</button></div>
+        <div class="code-block">curl 'http://localhost:8080/debug/hash-check?hash=sha256:abc123...'</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .main -->
+</div><!-- .layout -->
+
+<script>
+function toggle(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function scrollTo(id) {
+  // Try ep- prefix first, then section id
+  const el = document.getElementById('ep-' + id) || document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Update active nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>

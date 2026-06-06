@@ -1,7 +1,7 @@
 // src/service.rs — business logic layer
 
 use anyhow::Result;
-use chrono::DateTime;
+use chrono::{DateTime, Months, Utc};
 use std::sync::Arc;
 use tokio::sync::Semaphore;
 use tracing::{error, info, warn};
@@ -13,6 +13,32 @@ use crate::{
     models::{Character, CharacterSummary, Run},
     raiderio::RaiderIoClient,
 };
+
+/// How old a Raider.IO `last_crawled_at` timestamp must be before we consider
+/// the character's key data stale and worth re-fetching.  Characters crawled
+/// *within* this window are skipped to avoid burning rate-limit budget.
+const STALE_AFTER_MONTHS: u32 = 3;
+
+/// Returns `true` when a `last_crawled_at` string from Raider.IO indicates the
+/// character was crawled recently enough that we can skip the key update.
+///
+/// "Recently enough" = crawled within the last [`STALE_AFTER_MONTHS`] months.
+/// If the timestamp is missing or unparseable we treat it as stale (i.e. we
+/// *do* update) so we never silently skip someone due to bad data.
+fn crawled_recently(last_crawled_at: Option<&str>) -> bool {
+    let Some(raw) = last_crawled_at else {
+        return false; // no timestamp → assume stale, update
+    };
+    let Ok(crawled) = DateTime::parse_from_rfc3339(raw) else {
+        warn!(ts = raw, "Could not parse last_crawled_at; treating as stale");
+        return false;
+    };
+    let crawled_utc = crawled.with_timezone(&Utc);
+    let threshold = Utc::now()
+        .checked_sub_months(Months::new(STALE_AFTER_MONTHS))
+        .unwrap_or(Utc::now());
+    crawled_utc >= threshold
+}
 
 /// Shared application state
 #[derive(Clone)]
@@ -44,6 +70,9 @@ pub struct GuildUpdateResult {
     pub name: String,
     pub members_added: usize,
     pub members_updated: usize,
+    /// Members whose Raider.IO `last_crawled_at` is recent enough that we
+    /// skipped queuing a key-data update for them.
+    pub members_skipped_fresh: usize,
     pub members: Vec<CharacterSummary>,
 }
 
@@ -59,6 +88,7 @@ pub async fn update_guild(
     let members_raw = profile.members.unwrap_or_default();
     let mut added = 0usize;
     let mut updated = 0usize;
+    let mut skipped_fresh = 0usize;
     let mut summaries = Vec::new();
 
     for member in &members_raw {
@@ -67,6 +97,39 @@ pub async fn update_guild(
             .region
             .as_deref()
             .unwrap_or(region);
+
+        // ── Stale-crawl gate ──────────────────────────────────────────────
+        // If Raider.IO crawled this character's profile recently (within the
+        // last STALE_AFTER_MONTHS months) their key data is up-to-date and
+        // we can skip queuing an individual character update.  We still upsert
+        // them into the DB so roster membership stays current.
+        if crawled_recently(member.character.last_crawled_at.as_deref()) {
+            info!(
+                name = %member.character.name,
+                realm = %member.character.realm,
+                last_crawled = ?member.character.last_crawled_at,
+                "Skipping key update — crawled recently"
+            );
+            skipped_fresh += 1;
+            // Still upsert into DB so we track roster membership.
+            let _ = state
+                .db
+                .upsert_character(
+                    char_region,
+                    &member.character.realm,
+                    &member.character.name,
+                    Some(name),
+                    Some(realm),
+                )
+                .await?;
+            summaries.push(CharacterSummary {
+                region: char_region.to_string(),
+                realm: member.character.realm.clone(),
+                name: member.character.name.clone(),
+                guild_name: Some(name.to_string()),
+            });
+            continue;
+        }
 
         let existing = state
             .db
@@ -104,6 +167,7 @@ pub async fn update_guild(
         region,
         added,
         updated,
+        skipped_fresh,
         "Guild updated"
     );
 
@@ -113,6 +177,7 @@ pub async fn update_guild(
         name: name.to_string(),
         members_added: added,
         members_updated: updated,
+        members_skipped_fresh: skipped_fresh,
         members: summaries,
     })
 }

@@ -76,6 +76,9 @@ pub struct RioMemberCharacter {
     pub name: String,
     pub realm: String,
     pub region: Option<String>,
+    /// Raider.IO reports when this character's profile was last crawled.
+    /// Used to skip re-queuing characters whose data is fresh enough.
+    pub last_crawled_at: Option<String>,
 }
 
 // ─── API response DTOs ────────────────────────────────────────────────────────

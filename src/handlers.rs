@@ -64,6 +64,8 @@ pub struct GuildUpdateResponse {
     pub guild: GuildRef,
     pub members_added: usize,
     pub members_updated: usize,
+    /// Members skipped because Raider.IO crawled them recently (< 3 months).
+    pub members_skipped_fresh: usize,
 }
 
 #[derive(Serialize, Debug)]
@@ -97,6 +99,7 @@ pub async fn post_update_guild(
         },
         members_added: result.members_added,
         members_updated: result.members_updated,
+        members_skipped_fresh: result.members_skipped_fresh,
     }))
 }
 
@@ -362,4 +365,174 @@ fn parse_optional_dt(s: Option<&str>) -> Result<Option<DateTime<chrono::Utc>>, A
             Ok(Some(dt))
         }
     }
+}
+
+// ─── GET /debug/runs ──────────────────────────────────────────────────────────
+// Query params: scope (today|week|alltime|custom), from, to, min_level, limit
+
+#[derive(Deserialize, Debug)]
+pub struct DebugRunsQuery {
+    #[serde(default)]
+    pub scope: Scope,
+    pub min_level: Option<i64>,
+    pub from: Option<String>,
+    pub to: Option<String>,
+    pub limit: Option<i64>,
+    pub region: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct DebugRun {
+    pub id: i64,
+    pub character_name: String,
+    pub realm: String,
+    pub region: String,
+    pub dungeon_short: String,
+    pub key_level: i64,
+    pub completed_at: String,
+    pub within_time: bool,
+    pub url: Option<String>,
+    pub hash: String,
+}
+
+#[instrument(skip(state))]
+pub async fn get_debug_runs(
+    State(state): State<AppState>,
+    Query(query): Query<DebugRunsQuery>,
+) -> Result<impl IntoResponse, AppErr> {
+    let custom_from = parse_optional_dt(query.from.as_deref())?;
+    let custom_to = parse_optional_dt(query.to.as_deref())?;
+    let window = TimeWindow::resolve(query.scope, query.region.as_deref(), custom_from, custom_to)
+        .map_err(|e| AppErr(StatusCode::BAD_REQUEST, e.to_string()))?;
+    let min_level = query.min_level.unwrap_or(0);
+    let limit = query.limit.unwrap_or(200).min(1000);
+
+    let rows = state
+        .db
+        .list_runs(window.from, window.to, min_level, limit)
+        .await
+        .map_err(AppErr::from)?;
+
+    Ok(Json(rows))
+}
+
+// ─── GET /debug/characters ────────────────────────────────────────────────────
+
+#[instrument(skip(state))]
+pub async fn get_debug_characters(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppErr> {
+    let rows = state.db.list_all_characters_debug().await.map_err(AppErr::from)?;
+    Ok(Json(rows))
+}
+
+// ─── GET /debug/stats ─────────────────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct DebugStats {
+    pub total_characters: i64,
+    pub total_runs: i64,
+    pub runs_today: i64,
+    pub runs_this_week: i64,
+    pub runs_by_dungeon: Vec<DungeonCount>,
+    pub runs_by_keylevel: Vec<KeyLevelCount>,
+    pub top_characters: Vec<CharacterRunCount>,
+}
+
+#[derive(Serialize)]
+pub struct DungeonCount {
+    pub dungeon: String,
+    pub count: i64,
+}
+
+#[derive(Serialize)]
+pub struct KeyLevelCount {
+    pub key_level: i64,
+    pub count: i64,
+}
+
+#[derive(Serialize)]
+pub struct CharacterRunCount {
+    pub name: String,
+    pub realm: String,
+    pub region: String,
+    pub run_count: i64,
+}
+
+#[instrument(skip(state))]
+pub async fn get_debug_stats(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppErr> {
+    let stats = state.db.get_debug_stats().await.map_err(AppErr::from)?;
+    Ok(Json(stats))
+}
+
+// ─── GET /debug/runs/guild ────────────────────────────────────────────────────
+
+#[derive(Deserialize, Debug)]
+pub struct GuildRunsQuery {
+    pub region: Option<String>,
+    pub realm: Option<String>,
+    pub name: Option<String>,
+    #[serde(default)]
+    pub scope: Scope,
+    pub min_level: Option<i64>,
+    pub from: Option<String>,
+    pub to: Option<String>,
+    pub limit: Option<i64>,
+}
+
+#[instrument(skip(state))]
+pub async fn get_debug_guild_runs(
+    State(state): State<AppState>,
+    Query(query): Query<GuildRunsQuery>,
+) -> Result<impl IntoResponse, AppErr> {
+    let realm = query.realm.as_deref().unwrap_or("");
+    let name = query.name.as_deref().unwrap_or("");
+
+    if realm.is_empty() { bad_request!("Missing `realm` parameter"); }
+    if name.is_empty()  { bad_request!("Missing `name` parameter"); }
+
+    let custom_from = parse_optional_dt(query.from.as_deref())?;
+    let custom_to = parse_optional_dt(query.to.as_deref())?;
+    let window = TimeWindow::resolve(query.scope, query.region.as_deref(), custom_from, custom_to)
+        .map_err(|e| AppErr(StatusCode::BAD_REQUEST, e.to_string()))?;
+
+    let min_level = query.min_level.unwrap_or(0);
+    let limit = query.limit.unwrap_or(500).min(2000);
+
+    let rows = state
+        .db
+        .list_runs_for_guild(name, realm, window.from, window.to, min_level, limit)
+        .await
+        .map_err(AppErr::from)?;
+
+    Ok(Json(rows))
+}
+
+// ─── GET /debug/hash-check ────────────────────────────────────────────────────
+// Verify a specific run hash already exists in the DB.
+
+#[derive(Deserialize, Debug)]
+pub struct HashCheckQuery {
+    pub hash: String,
+}
+
+#[derive(Serialize)]
+pub struct HashCheckResponse {
+    pub hash: String,
+    pub exists: bool,
+}
+
+#[instrument(skip(state))]
+pub async fn get_debug_hash_check(
+    State(state): State<AppState>,
+    Query(query): Query<HashCheckQuery>,
+) -> Result<impl IntoResponse, AppErr> {
+    let exists = state
+        .db
+        .run_hash_exists(&query.hash)
+        .await
+        .map_err(AppErr::from)?;
+    Ok(Json(HashCheckResponse { hash: query.hash, exists }))
 }

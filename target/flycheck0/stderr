@@ -1,88 +1,12 @@
-   0.140670342s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint: fingerprint error for mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker)/Check { test: false }/TargetInner { name: "mplus-tracker", doc: true, ..: with_path("/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs", Edition2024) }
-   0.140699976s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/target/debug/.fingerprint/mplus-tracker-0bbd71e5e68995b8/bin-mplus-tracker`
-
-Caused by:
-    No such file or directory (os error 2)
-
-Stack backtrace:
-   0: cargo_util::paths::read_bytes
-   1: cargo_util::paths::read
-   2: cargo::core::compiler::fingerprint::_compare_old_fingerprint
-   3: cargo::core::compiler::fingerprint::prepare_target
-   4: cargo::core::compiler::compile
-   5: <cargo::core::compiler::build_runner::BuildRunner>::compile
-   6: cargo::ops::cargo_compile::compile_ws
-   7: cargo::ops::cargo_compile::compile_with_exec
-   8: cargo::ops::cargo_compile::compile
-   9: cargo::commands::check::exec
-  10: <cargo::cli::Exec>::exec
-  11: cargo::main
-  12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
-  13: std::rt::lang_start::<()>::{closure#0}
-  14: core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/core/src/ops/function.rs:287:21
-  15: std::panicking::catch_unwind::do_call
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:581:40
-  16: std::panicking::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:544:19
-  17: std::panic::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panic.rs:359:14
-  18: std::rt::lang_start_internal::{{closure}}
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/rt.rs:175:24
-  19: std::panicking::catch_unwind::do_call
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:581:40
-  20: std::panicking::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:544:19
-  21: std::panic::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panic.rs:359:14
-  22: std::rt::lang_start_internal
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/rt.rs:171:5
-  23: main
-  24: <unknown>
-  25: __libc_start_main
-  26: <unknown>
-   0.161059276s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint: fingerprint error for mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker)/Check { test: true }/TargetInner { name: "mplus-tracker", doc: true, ..: with_path("/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs", Edition2024) }
-   0.161073248s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/target/debug/.fingerprint/mplus-tracker-0f95135b260b34bd/test-bin-mplus-tracker`
-
-Caused by:
-    No such file or directory (os error 2)
-
-Stack backtrace:
-   0: cargo_util::paths::read_bytes
-   1: cargo_util::paths::read
-   2: cargo::core::compiler::fingerprint::_compare_old_fingerprint
-   3: cargo::core::compiler::fingerprint::prepare_target
-   4: cargo::core::compiler::compile
-   5: <cargo::core::compiler::build_runner::BuildRunner>::compile
-   6: cargo::ops::cargo_compile::compile_ws
-   7: cargo::ops::cargo_compile::compile_with_exec
-   8: cargo::ops::cargo_compile::compile
-   9: cargo::commands::check::exec
-  10: <cargo::cli::Exec>::exec
-  11: cargo::main
-  12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
-  13: std::rt::lang_start::<()>::{closure#0}
-  14: core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/core/src/ops/function.rs:287:21
-  15: std::panicking::catch_unwind::do_call
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:581:40
-  16: std::panicking::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:544:19
-  17: std::panic::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panic.rs:359:14
-  18: std::rt::lang_start_internal::{{closure}}
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/rt.rs:175:24
-  19: std::panicking::catch_unwind::do_call
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:581:40
-  20: std::panicking::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panicking.rs:544:19
-  21: std::panic::catch_unwind
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/panic.rs:359:14
-  22: std::rt::lang_start_internal
-             at /rustc/01f6ddf7588f42ae2d7eb0a2f21d44e8e96674cf/library/std/src/rt.rs:171:5
-  23: main
-  24: <unknown>
-  25: __libc_start_main
-  26: <unknown>
+   0.178679643s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint: stale: changed "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs"
+   0.178702204s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:           (vs) "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/target/debug/.fingerprint/mplus-tracker-0bbd71e5e68995b8/dep-bin-mplus-tracker"
+   0.178707311s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1780535038, nanos: 479003067 } < FileTime { seconds: 1780535057, nanos: 418133341 }
+   0.179032353s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint: fingerprint dirty for mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker)/Check { test: false }/TargetInner { name: "mplus-tracker", doc: true, ..: with_path("/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs", Edition2024) }
+   0.179052850s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/target/debug/.fingerprint/mplus-tracker-0bbd71e5e68995b8/dep-bin-mplus-tracker", reference_mtime: FileTime { seconds: 1780535038, nanos: 479003067 }, stale: "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs", stale_mtime: FileTime { seconds: 1780535057, nanos: 418133341 } }))
+   0.195758925s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint: stale: changed "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs"
+   0.195769938s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:           (vs) "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/target/debug/.fingerprint/mplus-tracker-0f95135b260b34bd/dep-test-bin-mplus-tracker"
+   0.195774074s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1780535038, nanos: 479003067 } < FileTime { seconds: 1780535057, nanos: 418133341 }
+   0.195815675s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint: fingerprint dirty for mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker)/Check { test: true }/TargetInner { name: "mplus-tracker", doc: true, ..: with_path("/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs", Edition2024) }
+   0.195826401s  INFO prepare_target{force=false package_id=mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker) target="mplus-tracker"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/target/debug/.fingerprint/mplus-tracker-0f95135b260b34bd/dep-test-bin-mplus-tracker", reference_mtime: FileTime { seconds: 1780535038, nanos: 479003067 }, stale: "/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker/src/main.rs", stale_mtime: FileTime { seconds: 1780535057, nanos: 418133341 } }))
     Checking mplus-tracker v0.1.0 (/home/jg/porn-folder/SeemsGood/keystone-logger/mplus-tracker)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.16s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.91s

@@ -79,6 +79,12 @@ async fn main() -> Result<()> {
             "/guild/:region/:realm/:name/roster",
             get(handlers::get_guild_roster),
         )
+        // Debug / dump endpoints
+        .route("/debug/runs",          get(handlers::get_debug_runs))
+        .route("/debug/runs/guild",    get(handlers::get_debug_guild_runs))
+        .route("/debug/characters",    get(handlers::get_debug_characters))
+        .route("/debug/stats",         get(handlers::get_debug_stats))
+        .route("/debug/hash-check",    get(handlers::get_debug_hash_check))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))

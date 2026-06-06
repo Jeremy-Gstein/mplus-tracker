@@ -1,7 +1,7 @@
 // src/db.rs — SQLite persistence layer via sqlx
 
 use anyhow::{Context, Result};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Datelike, TimeZone, Utc};
 use sqlx::{sqlite::SqlitePool, sqlite::SqlitePoolOptions, Row};
 use tracing::info;
 
@@ -275,5 +275,252 @@ impl Database {
         .fetch_all(&self.pool)
         .await?;
         Ok(rows)
+    }
+
+    // ─── Debug / dump helpers ────────────────────────────────────────────────
+
+    /// List recent runs with character info joined in, for the debug UI.
+    pub async fn list_runs(
+        &self,
+        from: DateTime<Utc>,
+        to: DateTime<Utc>,
+        min_level: i64,
+        limit: i64,
+    ) -> Result<Vec<crate::handlers::DebugRun>> {
+        let rows = sqlx::query(
+            r#"
+            SELECT r.id, c.name, c.realm, c.region,
+                   r.dungeon_short, r.key_level, r.completed_at,
+                   r.within_time, r.url, r.hash
+            FROM runs r
+            JOIN characters c ON c.id = r.character_id
+            WHERE r.completed_at BETWEEN ? AND ?
+              AND r.key_level >= ?
+            ORDER BY r.completed_at DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(from)
+        .bind(to)
+        .bind(min_level)
+        .bind(limit)
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .iter()
+            .map(|r| crate::handlers::DebugRun {
+                id: r.get(0),
+                character_name: r.get(1),
+                realm: r.get(2),
+                region: r.get(3),
+                dungeon_short: r.get(4),
+                key_level: r.get(5),
+                completed_at: r
+                    .get::<DateTime<Utc>, _>(6)
+                    .to_rfc3339(),
+                within_time: r.get::<i64, _>(7) != 0,
+                url: r.get(8),
+                hash: r.get(9),
+            })
+            .collect())
+    }
+
+    /// List runs filtered to guild members (by guild_name + guild_realm).
+    pub async fn list_runs_for_guild(
+        &self,
+        guild_name: &str,
+        guild_realm: &str,
+        from: DateTime<Utc>,
+        to: DateTime<Utc>,
+        min_level: i64,
+        limit: i64,
+    ) -> Result<Vec<crate::handlers::DebugRun>> {
+        let rows = sqlx::query(
+            r#"
+            SELECT r.id, c.name, c.realm, c.region,
+                   r.dungeon_short, r.key_level, r.completed_at,
+                   r.within_time, r.url, r.hash
+            FROM runs r
+            JOIN characters c ON c.id = r.character_id
+            WHERE c.guild_name = ? AND c.guild_realm = ?
+              AND r.completed_at BETWEEN ? AND ?
+              AND r.key_level >= ?
+            ORDER BY r.completed_at DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(guild_name)
+        .bind(guild_realm)
+        .bind(from)
+        .bind(to)
+        .bind(min_level)
+        .bind(limit)
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .iter()
+            .map(|r| crate::handlers::DebugRun {
+                id: r.get(0),
+                character_name: r.get(1),
+                realm: r.get(2),
+                region: r.get(3),
+                dungeon_short: r.get(4),
+                key_level: r.get(5),
+                completed_at: r
+                    .get::<DateTime<Utc>, _>(6)
+                    .to_rfc3339(),
+                within_time: r.get::<i64, _>(7) != 0,
+                url: r.get(8),
+                hash: r.get(9),
+            })
+            .collect())
+    }
+
+    /// Full character list with run counts, for the debug characters view.
+    pub async fn list_all_characters_debug(
+        &self,
+    ) -> Result<Vec<serde_json::Value>> {
+        let rows = sqlx::query(
+            r#"
+            SELECT c.id, c.region, c.realm, c.name,
+                   c.guild_name, c.guild_realm,
+                   c.last_seen,
+                   COUNT(r.id) AS run_count
+            FROM characters c
+            LEFT JOIN runs r ON r.character_id = c.id
+            GROUP BY c.id
+            ORDER BY run_count DESC
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows
+            .iter()
+            .map(|r| {
+                let last_seen: Option<DateTime<Utc>> = r.get(6);
+                serde_json::json!({
+                    "id": r.get::<i64, _>(0),
+                    "region": r.get::<String, _>(1),
+                    "realm": r.get::<String, _>(2),
+                    "name": r.get::<String, _>(3),
+                    "guild_name": r.get::<Option<String>, _>(4),
+                    "guild_realm": r.get::<Option<String>, _>(5),
+                    "last_seen": last_seen.map(|t| t.to_rfc3339()),
+                    "run_count": r.get::<i64, _>(7),
+                })
+            })
+            .collect())
+    }
+
+    /// Aggregate stats for the debug dashboard.
+    pub async fn get_debug_stats(
+        &self,
+    ) -> Result<crate::handlers::DebugStats> {
+        use crate::handlers::{CharacterRunCount, DebugStats, DungeonCount, KeyLevelCount};
+
+        let total_characters: i64 = sqlx::query("SELECT COUNT(*) FROM characters")
+            .fetch_one(&self.pool)
+            .await?
+            .get(0);
+
+        let total_runs: i64 = sqlx::query("SELECT COUNT(*) FROM runs")
+            .fetch_one(&self.pool)
+            .await?
+            .get(0);
+
+        // today = UTC midnight to now
+        let today_start = {
+            let now = Utc::now();
+            Utc.with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
+                .single()
+                .unwrap_or(now)
+        };
+        let runs_today: i64 = sqlx::query(
+            "SELECT COUNT(*) FROM runs WHERE completed_at >= ?",
+        )
+        .bind(today_start)
+        .fetch_one(&self.pool)
+        .await?
+        .get(0);
+
+        // this week = last 7 days
+        let week_start = Utc::now() - chrono::Duration::days(7);
+        let runs_this_week: i64 = sqlx::query(
+            "SELECT COUNT(*) FROM runs WHERE completed_at >= ?",
+        )
+        .bind(week_start)
+        .fetch_one(&self.pool)
+        .await?
+        .get(0);
+
+        let dungeon_rows = sqlx::query(
+            "SELECT dungeon_short, COUNT(*) AS cnt FROM runs GROUP BY dungeon_short ORDER BY cnt DESC",
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        let runs_by_dungeon = dungeon_rows
+            .iter()
+            .map(|r| DungeonCount {
+                dungeon: r.get(0),
+                count: r.get(1),
+            })
+            .collect();
+
+        let kl_rows = sqlx::query(
+            "SELECT key_level, COUNT(*) AS cnt FROM runs GROUP BY key_level ORDER BY key_level DESC",
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        let runs_by_keylevel = kl_rows
+            .iter()
+            .map(|r| KeyLevelCount {
+                key_level: r.get(0),
+                count: r.get(1),
+            })
+            .collect();
+
+        let top_rows = sqlx::query(
+            r#"
+            SELECT c.name, c.realm, c.region, COUNT(r.id) AS cnt
+            FROM runs r
+            JOIN characters c ON c.id = r.character_id
+            GROUP BY c.id
+            ORDER BY cnt DESC
+            LIMIT 20
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        let top_characters = top_rows
+            .iter()
+            .map(|r| CharacterRunCount {
+                name: r.get(0),
+                realm: r.get(1),
+                region: r.get(2),
+                run_count: r.get(3),
+            })
+            .collect();
+
+        Ok(DebugStats {
+            total_characters,
+            total_runs,
+            runs_today,
+            runs_this_week,
+            runs_by_dungeon,
+            runs_by_keylevel,
+            top_characters,
+        })
+    }
+
+    /// Check whether a specific run hash already exists in the DB.
+    pub async fn run_hash_exists(&self, hash: &str) -> Result<bool> {
+        let row = sqlx::query("SELECT 1 FROM runs WHERE hash=? LIMIT 1")
+            .bind(hash)
+            .fetch_optional(&self.pool)
+            .await?;
+        Ok(row.is_some())
     }
 }

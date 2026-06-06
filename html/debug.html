@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPTracker Debug Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c0f;
+    --bg2:       #0f1318;
+    --bg3:       #141920;
+    --border:    #1e2730;
+    --border2:   #2a3540;
+    --accent:    #00d4ff;
+    --accent2:   #0099cc;
+    --green:     #00ff88;
+    --yellow:    #ffd700;
+    --red:       #ff4466;
+    --orange:    #ff8c42;
+    --muted:     #4a5a6a;
+    --text:      #c8d8e8;
+    --text2:     #8899aa;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-head: 'Orbitron', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline effect */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── Header ─── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(0,212,255,0.4);
+  }
+  .logo span { color: var(--green); }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+    margin-left: auto;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  #base-url-display {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ─── Layout ─── */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    height: calc(100vh - 53px);
+  }
+
+  /* ─── Sidebar ─── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+
+  .sidebar-section {
+    margin-bottom: 8px;
+  }
+
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--muted);
+    padding: 8px 20px 4px;
+    text-transform: uppercase;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 20px;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .nav-btn:hover {
+    background: var(--bg3);
+    color: var(--text);
+    border-left-color: var(--border2);
+  }
+  .nav-btn.active {
+    background: rgba(0,212,255,0.06);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+  .nav-btn .icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-btn .method {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: auto;
+  }
+  .method.GET  { background: rgba(0,255,136,0.15); color: var(--green); }
+  .method.POST { background: rgba(255,140,66,0.15); color: var(--orange); }
+
+  /* ─── Main panel ─── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ─── Panel ─── */
+  .panel {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .panel.active { display: flex; }
+
+  .panel-header {
+    padding: 16px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .endpoint-badge {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    font-family: var(--font-mono);
+    background: var(--bg3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* ─── Controls ─── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 24px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .field input, .field select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    outline: none;
+    min-width: 120px;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent2);
+  }
+  .field select option { background: var(--bg3); }
+
+  .run-btn {
+    align-self: flex-end;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 7px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .run-btn:hover { background: #00aadd; transform: translateY(-1px); }
+  .run-btn:active { transform: translateY(0); }
+  .run-btn.post-btn {
+    background: var(--orange);
+  }
+  .run-btn.post-btn:hover { background: #e07a34; }
+
+  /* ─── Output ─── */
+  .output-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .output-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    flex-shrink: 0;
+  }
+  .output-tab {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .output-tab:hover { color: var(--text); }
+  .output-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .output-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .raw-output {
+    display: none;
+    height: 100%;
+    overflow: auto;
+    padding: 16px 24px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .raw-output.active { display: block; }
+
+  .table-output {
+    display: none;
+    height: 100%;
+    overflow: auto;
+    padding: 16px 24px;
+  }
+  .table-output.active { display: block; }
+
+  .visual-output {
+    display: none;
+    height: 100%;
+    overflow: auto;
+    padding: 16px 24px;
+  }
+  .visual-output.active { display: block; }
+
+  /* JSON syntax */
+  .json-key   { color: var(--accent); }
+  .json-str   { color: var(--green); }
+  .json-num   { color: var(--yellow); }
+  .json-bool  { color: var(--orange); }
+  .json-null  { color: var(--red); }
+
+  /* ─── Table ─── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .data-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(30,39,48,0.6);
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  .data-table tr:hover td {
+    background: rgba(0,212,255,0.03);
+    color: var(--text);
+  }
+  .data-table .num { color: var(--yellow); font-weight: 500; }
+  .data-table .name-col { color: var(--text); font-weight: 500; }
+  .data-table .timed-yes { color: var(--green); }
+  .data-table .timed-no  { color: var(--red); }
+  .data-table .link a {
+    color: var(--accent2);
+    text-decoration: none;
+    font-size: 11px;
+  }
+  .data-table .link a:hover { color: var(--accent); text-decoration: underline; }
+
+  /* ─── Stats cards ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .chart-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .bar-label {
+    font-size: 11px;
+    color: var(--text2);
+    min-width: 50px;
+  }
+  .bar-track {
+    flex: 1;
+    height: 14px;
+    background: var(--bg2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .bar-count {
+    font-size: 11px;
+    color: var(--yellow);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ─── Loading / error ─── */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 24px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    padding: 16px 24px;
+    color: var(--red);
+    font-size: 12px;
+    background: rgba(255,68,102,0.06);
+    border-left: 3px solid var(--red);
+    margin: 16px 24px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .success-msg {
+    padding: 12px 16px;
+    color: var(--green);
+    font-size: 12px;
+    background: rgba(0,255,136,0.06);
+    border-left: 3px solid var(--green);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 12px;
+  }
+
+  .empty-msg {
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* ─── Config bar ─── */
+  .config-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .config-bar label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .config-bar input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    outline: none;
+    max-width: 300px;
+  }
+  .config-bar input:focus { border-color: var(--accent2); }
+
+  /* ─── Hash check ─── */
+  .hash-result {
+    margin: 16px 24px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .hash-exists { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
+  .hash-missing { background: rgba(255,68,102,0.08); border: 1px solid rgba(255,68,102,0.3); color: var(--red); }
+
+  /* scroll */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .count-badge {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--yellow);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MP<span>TRACKER</span></div>
+  <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">DEBUG CONSOLE</div>
+  <div class="status-dot" id="statusDot" title="Server status"></div>
+</header>
+
+<div class="config-bar">
+  <label>BASE URL</label>
+  <input type="text" id="baseUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+  <button class="run-btn" style="padding:5px 14px;font-size:10px;" onclick="checkHealth()">PING</button>
+  <span id="healthResult" style="font-size:11px;color:var(--muted);"></span>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">🔍 Debug Queries</div>
+      <button class="nav-btn active" onclick="showPanel('stats')" id="nav-stats">
+        <span class="icon">📊</span> DB Stats <span class="method GET">GET</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('runs')" id="nav-runs">
+        <span class="icon">🗝️</span> All Runs <span class="method GET">GET</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('guild-runs')" id="nav-guild-runs">
+        <span class="icon">⚔️</span> Guild Runs <span class="method GET">GET</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('characters')" id="nav-characters">
+        <span class="icon">👤</span> Characters <span class="method GET">GET</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('hash-check')" id="nav-hash-check">
+        <span class="icon">🔐</span> Hash Check <span class="method GET">GET</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">🔄 Updates</div>
+      <button class="nav-btn" onclick="showPanel('update-guild')" id="nav-update-guild">
+        <span class="icon">🏰</span> Update Guild <span class="method POST">POST</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('update-char')" id="nav-update-char">
+        <span class="icon">🧙</span> Update Char <span class="method POST">POST</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('update-all')" id="nav-update-all">
+        <span class="icon">⚡</span> Update All <span class="method POST">POST</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">📈 Queries</div>
+      <button class="nav-btn" onclick="showPanel('char-keys')" id="nav-char-keys">
+        <span class="icon">🔑</span> Char Keys <span class="method GET">GET</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('player-keys')" id="nav-player-keys">
+        <span class="icon">🎮</span> Player Keys <span class="method GET">GET</span>
+      </button>
+      <button class="nav-btn" onclick="showPanel('roster')" id="nav-roster">
+        <span class="icon">📋</span> Guild Roster <span class="method GET">GET</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main area -->
+  <div class="main">
+
+    <!-- ─── STATS ─── -->
+    <div class="panel active" id="panel-stats">
+      <div class="panel-header">
+        <div class="panel-title">DATABASE STATS</div>
+        <div class="endpoint-badge">GET /debug/stats</div>
+        <button class="run-btn" style="margin-left:auto;" onclick="loadStats()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="visual-output active" id="stats-visual">
+          <div class="empty-msg">Press FETCH to load database statistics.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ALL RUNS ─── -->
+    <div class="panel" id="panel-runs">
+      <div class="panel-header">
+        <div class="panel-title">ALL RUNS</div>
+        <div class="endpoint-badge">GET /debug/runs</div>
+        <span class="count-badge" id="runs-count" style="display:none"></span>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Scope</label>
+          <select id="runs-scope">
+            <option value="today">Today</option>
+            <option value="week" selected>This Week</option>
+            <option value="alltime">All Time</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Min Level</label>
+          <input type="number" id="runs-min-level" value="0" min="0" max="30" style="width:80px;">
+        </div>
+        <div class="field">
+          <label>Limit</label>
+          <input type="number" id="runs-limit" value="200" min="1" max="1000" style="width:80px;">
+        </div>
+        <div class="field">
+          <label>Region</label>
+          <input type="text" id="runs-region" value="us" style="width:70px;">
+        </div>
+        <button class="run-btn" onclick="loadRuns()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="output-tabs">
+          <div class="output-tab active" onclick="switchTab('runs','table')">Table</div>
+          <div class="output-tab" onclick="switchTab('runs','raw')">JSON</div>
+        </div>
+        <div class="output-body">
+          <div class="table-output active" id="runs-table-view">
+            <div class="empty-msg">Press FETCH to load runs.</div>
+          </div>
+          <div class="raw-output" id="runs-raw-view"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── GUILD RUNS ─── -->
+    <div class="panel" id="panel-guild-runs">
+      <div class="panel-header">
+        <div class="panel-title">GUILD RUNS</div>
+        <div class="endpoint-badge">GET /debug/runs/guild</div>
+        <span class="count-badge" id="guild-runs-count" style="display:none"></span>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Region</label>
+          <input type="text" id="gr-region" value="us" style="width:70px;">
+        </div>
+        <div class="field">
+          <label>Realm</label>
+          <input type="text" id="gr-realm" value="Stormrage" style="width:130px;">
+        </div>
+        <div class="field">
+          <label>Guild Name</label>
+          <input type="text" id="gr-name" value="Seems Good" style="width:160px;">
+        </div>
+        <div class="field">
+          <label>Scope</label>
+          <select id="gr-scope">
+            <option value="today">Today</option>
+            <option value="week" selected>This Week</option>
+            <option value="alltime">All Time</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Min Level</label>
+          <input type="number" id="gr-min-level" value="0" min="0" max="30" style="width:80px;">
+        </div>
+        <div class="field">
+          <label>Limit</label>
+          <input type="number" id="gr-limit" value="500" min="1" max="2000" style="width:80px;">
+        </div>
+        <button class="run-btn" onclick="loadGuildRuns()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="output-tabs">
+          <div class="output-tab active" onclick="switchTab('guild-runs','table')">Table</div>
+          <div class="output-tab" onclick="switchTab('guild-runs','raw')">JSON</div>
+        </div>
+        <div class="output-body">
+          <div class="table-output active" id="guild-runs-table-view">
+            <div class="empty-msg">Press FETCH to load guild runs.</div>
+          </div>
+          <div class="raw-output" id="guild-runs-raw-view"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CHARACTERS ─── -->
+    <div class="panel" id="panel-characters">
+      <div class="panel-header">
+        <div class="panel-title">CHARACTERS</div>
+        <div class="endpoint-badge">GET /debug/characters</div>
+        <span class="count-badge" id="chars-count" style="display:none"></span>
+        <button class="run-btn" style="margin-left:auto;" onclick="loadCharacters()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="output-tabs">
+          <div class="output-tab active" onclick="switchTab('characters','table')">Table</div>
+          <div class="output-tab" onclick="switchTab('characters','raw')">JSON</div>
+        </div>
+        <div class="output-body">
+          <div class="table-output active" id="characters-table-view">
+            <div class="empty-msg">Press FETCH to load characters.</div>
+          </div>
+          <div class="raw-output" id="characters-raw-view"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── HASH CHECK ─── -->
+    <div class="panel" id="panel-hash-check">
+      <div class="panel-header">
+        <div class="panel-title">HASH CHECK</div>
+        <div class="endpoint-badge">GET /debug/hash-check</div>
+      </div>
+      <div class="controls">
+        <div class="field" style="flex:1;">
+          <label>Run Hash</label>
+          <input type="text" id="hash-input" placeholder="e.g. sha256:abc123..." style="width:100%;min-width:400px;">
+        </div>
+        <button class="run-btn" onclick="checkHash()">CHECK</button>
+      </div>
+      <div class="output-area">
+        <div class="visual-output active" id="hash-result-area">
+          <div class="empty-msg">Enter a hash and press CHECK to verify if a run exists in the database.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── UPDATE GUILD ─── -->
+    <div class="panel" id="panel-update-guild">
+      <div class="panel-header">
+        <div class="panel-title">UPDATE GUILD</div>
+        <div class="endpoint-badge">POST /update/guild</div>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Region</label>
+          <input type="text" id="ug-region" value="us" style="width:70px;">
+        </div>
+        <div class="field">
+          <label>Realm</label>
+          <input type="text" id="ug-realm" value="Stormrage" style="width:130px;">
+        </div>
+        <div class="field">
+          <label>Guild Name</label>
+          <input type="text" id="ug-name" value="Seems Good" style="width:160px;">
+        </div>
+        <button class="run-btn post-btn" onclick="updateGuild()">TRIGGER</button>
+      </div>
+      <div class="output-area">
+        <div class="raw-output active" id="update-guild-output" style="padding:16px 24px;"></div>
+      </div>
+    </div>
+
+    <!-- ─── UPDATE CHAR ─── -->
+    <div class="panel" id="panel-update-char">
+      <div class="panel-header">
+        <div class="panel-title">UPDATE CHARACTER</div>
+        <div class="endpoint-badge">POST /update/character</div>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Region</label>
+          <input type="text" id="uc-region" value="us" style="width:70px;">
+        </div>
+        <div class="field">
+          <label>Realm</label>
+          <input type="text" id="uc-realm" value="Stormrage" style="width:130px;">
+        </div>
+        <div class="field">
+          <label>Character Name</label>
+          <input type="text" id="uc-name" placeholder="Duhva" style="width:160px;">
+        </div>
+        <button class="run-btn post-btn" onclick="updateChar()">TRIGGER</button>
+      </div>
+      <div class="output-area">
+        <div class="raw-output active" id="update-char-output" style="padding:16px 24px;"></div>
+      </div>
+    </div>
+
+    <!-- ─── UPDATE ALL ─── -->
+    <div class="panel" id="panel-update-all">
+      <div class="panel-header">
+        <div class="panel-title">UPDATE ALL CHARACTERS</div>
+        <div class="endpoint-badge">POST /update/all</div>
+      </div>
+      <div class="controls">
+        <div style="color:var(--yellow);font-size:12px;padding:4px 0;">
+          ⚠️ This will queue updates for every character in the database. Use with caution.
+        </div>
+        <button class="run-btn post-btn" onclick="updateAll()">TRIGGER UPDATE ALL</button>
+      </div>
+      <div class="output-area">
+        <div class="raw-output active" id="update-all-output" style="padding:16px 24px;"></div>
+      </div>
+    </div>
+
+    <!-- ─── CHAR KEYS ─── -->
+    <div class="panel" id="panel-char-keys">
+      <div class="panel-header">
+        <div class="panel-title">CHARACTER KEYS</div>
+        <div class="endpoint-badge">GET /character/:region/:realm/:name/keys</div>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Region</label>
+          <input type="text" id="ck-region" value="us" style="width:70px;">
+        </div>
+        <div class="field">
+          <label>Realm</label>
+          <input type="text" id="ck-realm" value="Stormrage" style="width:130px;">
+        </div>
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="ck-name" placeholder="Duhva" style="width:160px;">
+        </div>
+        <div class="field">
+          <label>Scope</label>
+          <select id="ck-scope">
+            <option value="today">Today</option>
+            <option value="week" selected>This Week</option>
+            <option value="alltime">All Time</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Min Level</label>
+          <input type="number" id="ck-min-level" value="0" min="0" max="30" style="width:80px;">
+        </div>
+        <button class="run-btn" onclick="loadCharKeys()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="raw-output active" id="char-keys-output" style="padding:16px 24px;"></div>
+      </div>
+    </div>
+
+    <!-- ─── PLAYER KEYS ─── -->
+    <div class="panel" id="panel-player-keys">
+      <div class="panel-header">
+        <div class="panel-title">PLAYER KEYS</div>
+        <div class="endpoint-badge">GET /player/:player_id/keys</div>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Player ID</label>
+          <input type="text" id="pk-player-id" placeholder="player_ash" style="width:180px;">
+        </div>
+        <div class="field">
+          <label>Scope</label>
+          <select id="pk-scope">
+            <option value="today">Today</option>
+            <option value="week" selected>This Week</option>
+            <option value="alltime">All Time</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Min Level</label>
+          <input type="number" id="pk-min-level" value="0" min="0" max="30" style="width:80px;">
+        </div>
+        <button class="run-btn" onclick="loadPlayerKeys()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="raw-output active" id="player-keys-output" style="padding:16px 24px;"></div>
+      </div>
+    </div>
+
+    <!-- ─── ROSTER ─── -->
+    <div class="panel" id="panel-roster">
+      <div class="panel-header">
+        <div class="panel-title">GUILD ROSTER</div>
+        <div class="endpoint-badge">GET /guild/:region/:realm/:name/roster</div>
+        <span class="count-badge" id="roster-count" style="display:none"></span>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label>Region</label>
+          <input type="text" id="ro-region" value="us" style="width:70px;">
+        </div>
+        <div class="field">
+          <label>Realm</label>
+          <input type="text" id="ro-realm" value="Stormrage" style="width:130px;">
+        </div>
+        <div class="field">
+          <label>Guild Name</label>
+          <input type="text" id="ro-name" value="Seems Good" style="width:160px;">
+        </div>
+        <button class="run-btn" onclick="loadRoster()">FETCH</button>
+      </div>
+      <div class="output-area">
+        <div class="output-tabs">
+          <div class="output-tab active" onclick="switchTab('roster','table')">Table</div>
+          <div class="output-tab" onclick="switchTab('roster','raw')">JSON</div>
+        </div>
+        <div class="output-body">
+          <div class="table-output active" id="roster-table-view">
+            <div class="empty-msg">Press FETCH to load roster.</div>
+          </div>
+          <div class="raw-output" id="roster-raw-view"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .main -->
+</div><!-- .layout -->
+
+<script>
+// ─── Utilities ─────────────────────────────────────────────────────────────
+
+function base() {
+  return document.getElementById('baseUrl').value.replace(/\/$/, '');
+}
+
+async function apiFetch(url, opts = {}) {
+  const r = await fetch(base() + url, opts);
+  const text = await r.text();
+  try { return { ok: r.ok, status: r.status, data: JSON.parse(text) }; }
+  catch { return { ok: r.ok, status: r.status, data: text }; }
+}
+
+function qs(params) {
+  const p = new URLSearchParams();
+  for (const [k,v] of Object.entries(params)) {
+    if (v !== '' && v !== null && v !== undefined) p.set(k, v);
+  }
+  const s = p.toString();
+  return s ? '?' + s : '';
+}
+
+// ─── Navigation ────────────────────────────────────────────────────────────
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+}
+
+// ─── Tab switching ─────────────────────────────────────────────────────────
+
+function switchTab(panel, view) {
+  const panelEl = document.getElementById('panel-' + panel);
+  panelEl.querySelectorAll('.output-tab').forEach((t,i) => {
+    t.classList.toggle('active', (view === 'table' && i === 0) || (view === 'raw' && i === 1));
+  });
+  const tableEl = document.getElementById(panel + '-table-view') || document.getElementById(panel.replace('-','_') + '-table-view');
+  const rawEl   = document.getElementById(panel + '-raw-view')   || document.getElementById(panel.replace('-','_') + '-raw-view');
+  if (tableEl) tableEl.classList.toggle('active', view === 'table');
+  if (rawEl)   rawEl.classList.toggle('active',   view === 'raw');
+}
+
+// ─── JSON syntax highlight ─────────────────────────────────────────────────
+
+function highlight(obj) {
+  const s = JSON.stringify(obj, null, 2);
+  return s
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+      if (/^"/.test(m)) return /:$/.test(m) ? `<span class="json-key">${m}</span>` : `<span class="json-str">${m}</span>`;
+      if (/true|false/.test(m)) return `<span class="json-bool">${m}</span>`;
+      if (/null/.test(m)) return `<span class="json-null">${m}</span>`;
+      return `<span class="json-num">${m}</span>`;
+    });
+}
+
+function setRaw(id, data) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = typeof data === 'string' ? data : highlight(data);
+}
+
+function setLoading(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Fetching from server…</div>';
+}
+
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="error-msg">✖ ${msg}</div>`;
+}
+
+// ─── Health check ──────────────────────────────────────────────────────────
+
+async function checkHealth() {
+  const r = await apiFetch('/health').catch(e => ({ ok: false, data: e.message }));
+  const dot  = document.getElementById('statusDot');
+  const info = document.getElementById('healthResult');
+  if (r.ok) {
+    dot.style.background = 'var(--green)';
+    dot.style.boxShadow = '0 0 8px var(--green)';
+    info.textContent = `✓ v${r.data.version || '?'} — server online`;
+    info.style.color = 'var(--green)';
+  } else {
+    dot.style.background = 'var(--red)';
+    dot.style.boxShadow = '0 0 8px var(--red)';
+    info.textContent = '✖ unreachable';
+    info.style.color = 'var(--red)';
+  }
+}
+
+// Auto-ping on load
+setTimeout(checkHealth, 500);
+
+// ─── Stats ─────────────────────────────────────────────────────────────────
+
+async function loadStats() {
+  const el = document.getElementById('stats-visual');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading stats…</div>';
+  const r = await apiFetch('/debug/stats').catch(e => ({ ok: false, data: e.message }));
+  if (!r.ok) { el.innerHTML = `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`; return; }
+  const d = r.data;
+
+  const maxDungeon = Math.max(...(d.runs_by_dungeon || []).map(x => x.count), 1);
+  const maxKl      = Math.max(...(d.runs_by_keylevel || []).map(x => x.count), 1);
+  const maxChar    = Math.max(...(d.top_characters || []).map(x => x.run_count), 1);
+
+  const dungeonBars = (d.runs_by_dungeon || []).map(x => `
+    <div class="bar-row">
+      <div class="bar-label">${x.dungeon}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(x.count/maxDungeon*100).toFixed(1)}%"></div></div>
+      <div class="bar-count">${x.count}</div>
+    </div>`).join('');
+
+  const klBars = (d.runs_by_keylevel || []).map(x => `
+    <div class="bar-row">
+      <div class="bar-label">+${x.key_level}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(x.count/maxKl*100).toFixed(1)}%;background:linear-gradient(90deg,var(--yellow),var(--orange))"></div></div>
+      <div class="bar-count">${x.count}</div>
+    </div>`).join('');
+
+  const charBars = (d.top_characters || []).map(x => `
+    <div class="bar-row">
+      <div class="bar-label" style="min-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${x.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(x.run_count/maxChar*100).toFixed(1)}%;background:linear-gradient(90deg,var(--accent2),var(--green))"></div></div>
+      <div class="bar-count">${x.run_count}</div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Characters</div><div class="stat-value">${d.total_characters}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Runs</div><div class="stat-value">${d.total_runs}</div></div>
+      <div class="stat-card"><div class="stat-label">Runs Today</div><div class="stat-value" style="color:var(--green)">${d.runs_today}</div></div>
+      <div class="stat-card"><div class="stat-label">Runs This Week</div><div class="stat-value" style="color:var(--yellow)">${d.runs_this_week}</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card"><div class="chart-title">By Dungeon</div>${dungeonBars || '<div style="color:var(--muted);font-size:11px">No data</div>'}</div>
+      <div class="chart-card"><div class="chart-title">By Key Level</div>${klBars || '<div style="color:var(--muted);font-size:11px">No data</div>'}</div>
+      <div class="chart-card"><div class="chart-title">Top Characters</div>${charBars || '<div style="color:var(--muted);font-size:11px">No data</div>'}</div>
+    </div>`;
+}
+
+// Auto-load stats on open
+document.addEventListener('DOMContentLoaded', loadStats);
+
+// ─── Runs table renderer ───────────────────────────────────────────────────
+
+function renderRunsTable(runs) {
+  if (!runs || runs.length === 0) return '<div class="empty-msg">No runs found for this query.</div>';
+  const rows = runs.map(r => `
+    <tr>
+      <td class="name-col">${esc(r.character_name)}</td>
+      <td>${esc(r.realm)}</td>
+      <td>${esc(r.region)}</td>
+      <td>${esc(r.dungeon_short)}</td>
+      <td class="num">+${r.key_level}</td>
+      <td class="${r.within_time ? 'timed-yes' : 'timed-no'}">${r.within_time ? '✓ IN TIME' : '✗ DEPLETED'}</td>
+      <td>${fmtDate(r.completed_at)}</td>
+      <td class="link">${r.url ? `<a href="${r.url}" target="_blank">↗ rio</a>` : '—'}</td>
+      <td style="font-size:10px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;">${r.hash.substring(0,16)}…</td>
+    </tr>`).join('');
+  return `<table class="data-table">
+    <thead><tr>
+      <th>Character</th><th>Realm</th><th>Region</th>
+      <th>Dungeon</th><th>Level</th><th>Timed</th>
+      <th>Completed</th><th>Link</th><th>Hash</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12: false });
+}
+
+// ─── Load All Runs ─────────────────────────────────────────────────────────
+
+async function loadRuns() {
+  setLoading('runs-table-view');
+  document.getElementById('runs-raw-view').innerHTML = '';
+  const r = await apiFetch('/debug/runs' + qs({
+    scope:     document.getElementById('runs-scope').value,
+    min_level: document.getElementById('runs-min-level').value,
+    limit:     document.getElementById('runs-limit').value,
+    region:    document.getElementById('runs-region').value,
+  })).catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { setError('runs-table-view', JSON.stringify(r.data)); return; }
+  const badge = document.getElementById('runs-count');
+  badge.textContent = r.data.length + ' runs';
+  badge.style.display = 'inline-block';
+  document.getElementById('runs-table-view').innerHTML = renderRunsTable(r.data);
+  document.getElementById('runs-raw-view').innerHTML = highlight(r.data);
+}
+
+// ─── Load Guild Runs ───────────────────────────────────────────────────────
+
+async function loadGuildRuns() {
+  setLoading('guild-runs-table-view');
+  document.getElementById('guild-runs-raw-view').innerHTML = '';
+  const r = await apiFetch('/debug/runs/guild' + qs({
+    region:    document.getElementById('gr-region').value,
+    realm:     document.getElementById('gr-realm').value,
+    name:      document.getElementById('gr-name').value,
+    scope:     document.getElementById('gr-scope').value,
+    min_level: document.getElementById('gr-min-level').value,
+    limit:     document.getElementById('gr-limit').value,
+  })).catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { setError('guild-runs-table-view', JSON.stringify(r.data)); return; }
+  const badge = document.getElementById('guild-runs-count');
+  badge.textContent = r.data.length + ' runs';
+  badge.style.display = 'inline-block';
+  document.getElementById('guild-runs-table-view').innerHTML = renderRunsTable(r.data);
+  document.getElementById('guild-runs-raw-view').innerHTML = highlight(r.data);
+}
+
+// ─── Load Characters ───────────────────────────────────────────────────────
+
+async function loadCharacters() {
+  setLoading('characters-table-view');
+  document.getElementById('characters-raw-view').innerHTML = '';
+  const r = await apiFetch('/debug/characters').catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { setError('characters-table-view', JSON.stringify(r.data)); return; }
+  const badge = document.getElementById('chars-count');
+  badge.textContent = r.data.length + ' chars';
+  badge.style.display = 'inline-block';
+
+  const rows = r.data.map(c => `
+    <tr>
+      <td class="num">${c.id}</td>
+      <td class="name-col">${esc(c.name)}</td>
+      <td>${esc(c.realm)}</td>
+      <td>${esc(c.region)}</td>
+      <td>${c.guild_name ? esc(c.guild_name) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td class="num">${c.run_count}</td>
+      <td style="color:var(--muted);font-size:11px">${c.last_seen ? fmtDate(c.last_seen) : '—'}</td>
+    </tr>`).join('');
+
+  document.getElementById('characters-table-view').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Name</th><th>Realm</th><th>Region</th><th>Guild</th><th>Runs</th><th>Last Seen</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="7" class="empty-msg">No characters found.</td></tr>'}</tbody>
+    </table>`;
+  document.getElementById('characters-raw-view').innerHTML = highlight(r.data);
+}
+
+// ─── Hash Check ────────────────────────────────────────────────────────────
+
+async function checkHash() {
+  const hash = document.getElementById('hash-input').value.trim();
+  const el = document.getElementById('hash-result-area');
+  if (!hash) { el.innerHTML = '<div class="error-msg">Enter a hash value first.</div>'; return; }
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Checking hash…</div>';
+  const r = await apiFetch('/debug/hash-check' + qs({ hash })).catch(e => ({ ok: false, data: e.message }));
+  if (!r.ok) { el.innerHTML = `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`; return; }
+  const { exists } = r.data;
+  el.innerHTML = `
+    <div class="hash-result ${exists ? 'hash-exists' : 'hash-missing'}">
+      ${exists
+        ? '✓ Hash EXISTS in database — this run has already been recorded. No duplicate will be inserted.'
+        : '✗ Hash NOT FOUND — this run is new and would be inserted on next update.'}
+    </div>
+    <div style="margin:0 24px;font-size:11px;color:var(--muted)">Hash: <span style="color:var(--text2)">${esc(hash)}</span></div>`;
+}
+
+// ─── Update Guild ──────────────────────────────────────────────────────────
+
+async function updateGuild() {
+  const el = document.getElementById('update-guild-output');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Triggering guild update…</div>';
+  const r = await apiFetch('/update/guild' + qs({
+    region: document.getElementById('ug-region').value,
+    realm:  document.getElementById('ug-realm').value,
+    name:   document.getElementById('ug-name').value,
+  }), { method: 'POST' }).catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { el.innerHTML = `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`; return; }
+  const d = r.data;
+  el.innerHTML = `
+    <div class="success-msg">
+      ✓ Guild update complete — 
+      <strong>${d.members_added}</strong> added, 
+      <strong>${d.members_updated}</strong> updated, 
+      <strong>${d.members_skipped_fresh ?? 0}</strong> skipped (crawled recently)
+    </div>
+    ${highlight(d)}`;
+}
+
+// ─── Update Character ──────────────────────────────────────────────────────
+
+async function updateChar() {
+  const el = document.getElementById('update-char-output');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Triggering character update…</div>';
+  const r = await apiFetch('/update/character' + qs({
+    region: document.getElementById('uc-region').value,
+    realm:  document.getElementById('uc-realm').value,
+    name:   document.getElementById('uc-name').value,
+  }), { method: 'POST' }).catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { el.innerHTML = `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`; return; }
+  const d = r.data;
+  el.innerHTML = `
+    <div class="success-msg">
+      ✓ Character update complete — 
+      <strong>${d.runs_inserted}</strong> new runs inserted, 
+      <strong>${d.runs_ignored}</strong> already existed (hash dedup)
+    </div>
+    ${highlight(d)}`;
+}
+
+// ─── Update All ────────────────────────────────────────────────────────────
+
+async function updateAll() {
+  const el = document.getElementById('update-all-output');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Triggering update all — this may take a while…</div>';
+  const r = await apiFetch('/update/all', { method: 'POST' }).catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { el.innerHTML = `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`; return; }
+  const d = r.data;
+  el.innerHTML = `
+    <div class="success-msg">
+      ✓ Update all complete — 
+      <strong>${d.total_characters}</strong> total, 
+      <strong>${d.updated_ok}</strong> ok, 
+      <strong>${d.failed}</strong> failed
+      ${d.errors.length ? `<br><span style="color:var(--red)">${d.errors.slice(0,5).map(esc).join('<br>')}</span>` : ''}
+    </div>
+    ${highlight(d)}`;
+}
+
+// ─── Character Keys ────────────────────────────────────────────────────────
+
+async function loadCharKeys() {
+  const el = document.getElementById('char-keys-output');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
+  const region = document.getElementById('ck-region').value;
+  const realm  = document.getElementById('ck-realm').value;
+  const name   = document.getElementById('ck-name').value;
+  const r = await apiFetch(`/character/${region}/${realm}/${name}/keys` + qs({
+    scope:     document.getElementById('ck-scope').value,
+    min_level: document.getElementById('ck-min-level').value,
+  })).catch(e => ({ ok: false, data: e.message }));
+  el.innerHTML = r.ok ? highlight(r.data) : `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`;
+}
+
+// ─── Player Keys ───────────────────────────────────────────────────────────
+
+async function loadPlayerKeys() {
+  const el = document.getElementById('player-keys-output');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
+  const id = document.getElementById('pk-player-id').value;
+  const r = await apiFetch(`/player/${id}/keys` + qs({
+    scope:     document.getElementById('pk-scope').value,
+    min_level: document.getElementById('pk-min-level').value,
+  })).catch(e => ({ ok: false, data: e.message }));
+  el.innerHTML = r.ok ? highlight(r.data) : `<div class="error-msg">✖ ${JSON.stringify(r.data)}</div>`;
+}
+
+// ─── Roster ────────────────────────────────────────────────────────────────
+
+async function loadRoster() {
+  setLoading('roster-table-view');
+  const region = document.getElementById('ro-region').value;
+  const realm  = document.getElementById('ro-realm').value;
+  const name   = document.getElementById('ro-name').value;
+  const r = await apiFetch(`/guild/${region}/${realm}/${name}/roster`).catch(e => ({ ok: false, data: e.message }));
+
+  if (!r.ok) { setError('roster-table-view', JSON.stringify(r.data)); return; }
+  const members = r.data.members || [];
+  const badge = document.getElementById('roster-count');
+  badge.textContent = members.length + ' members';
+  badge.style.display = 'inline-block';
+
+  const rows = members.map(m => `
+    <tr>
+      <td class="name-col">${esc(m.name)}</td>
+      <td>${esc(m.realm)}</td>
+      <td>${esc(m.region)}</td>
+      <td>${m.guild_name ? esc(m.guild_name) : '<span style="color:var(--muted)">—</span>'}</td>
+    </tr>`).join('');
+
+  document.getElementById('roster-table-view').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Realm</th><th>Region</th><th>Guild</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="4" style="padding:20px;color:var(--muted)">No members found.</td></tr>'}</tbody>
+    </table>`;
+  document.getElementById('roster-raw-view').innerHTML = highlight(r.data);
+}
+</script>
+</body>
+</html>
