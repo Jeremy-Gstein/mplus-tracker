@@ -2,13 +2,14 @@
 
 use anyhow::{Context, Result};
 use axum::{
-    routing::{delete, get, post},
-    Router,
+    Router, http::HeaderValue, routing::{delete, get, post}
 };
 use std::net::SocketAddr;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use axum::http::Method;
+use tower_http::cors::{Any, CorsLayer};
 
 mod auth;
 mod config;
@@ -73,6 +74,13 @@ async fn main() -> Result<()> {
     // ── App state ──────────────────────────────────────────────────────────
     let state = AppState::new(db, rio, config.clone());
 
+    // ── CORS/HEADERS ───────────────────────────────────────────────────────
+    let cors = CorsLayer::new()
+        .allow_origin("https://mplus.seemsgood.org".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST, Method::DELETE])
+        .allow_headers(Any);
+
+
     // ── Router ─────────────────────────────────────────────────────────────
     let app = Router::new()
         // Health — also exempted inside BearerAuthLayer, belt-and-suspenders
@@ -112,6 +120,7 @@ async fn main() -> Result<()> {
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
                 .on_response(DefaultOnResponse::new().level(Level::INFO)),
         )
+        .layer(cors)
         .with_state(state);
 
     // ── Listen ─────────────────────────────────────────────────────────────
