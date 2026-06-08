@@ -2,13 +2,14 @@
 
 use anyhow::{Context, Result};
 use axum::{
-    Router, http::HeaderValue, routing::{delete, get, post}
+    Router, routing::{delete, get, post}
 };
 use std::net::SocketAddr;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 use axum::http::Method;
+// use axum::http::HeaderValue; // needed for reading allowed origin for CORS
 use tower_http::cors::{Any, CorsLayer};
 
 mod auth;
@@ -76,7 +77,8 @@ async fn main() -> Result<()> {
 
     // ── CORS/HEADERS ───────────────────────────────────────────────────────
     let cors = CorsLayer::new()
-        .allow_origin("https://mplus.seemsgood.org".parse::<HeaderValue>().unwrap())
+        //.allow_origin("https://mplus.seemsgood.org".parse::<HeaderValue>().unwrap())
+        .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST, Method::DELETE])
         .allow_headers(Any);
 
