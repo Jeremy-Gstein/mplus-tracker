@@ -1,0 +1,31 @@
+# =============================================================================
+# /etc/mplus-tracker/update.conf
+#
+# Configuration for the mplus-update.sh script.
+# Sourced as bash — no spaces around '=', quote values with spaces.
+#
+# Permissions: chmod 640, chown root:mplus-tracker
+# =============================================================================
+
+# ── Required ──────────────────────────────────────────────────────────────────
+
+# Base URL of the mplus-tracker API.
+# If running on the same host as Docker:  http://localhost:8080
+# If behind a Cloudflare tunnel:          https://tracker.example.com
+MPLUS_TRACKER_URL="http://localhost:8080"
+
+# Bearer token — must match API_TOKEN in your .env / docker-compose.yml
+# Generate with:  openssl rand -hex 32
+MPLUS_API_TOKEN="REPLACE_WITH_YOUR_API_TOKEN"
+
+# ── Optional (defaults shown) ─────────────────────────────────────────────────
+
+# Max seconds to wait for the update/all request to complete.
+# Large guilds with rate limiting can take several minutes.
+# MPLUS_TIMEOUT=300
+
+# Number of times to retry on non-401 failures before giving up.
+# MPLUS_MAX_RETRIES=3
+
+# Seconds to wait between retry attempts.
+# MPLUS_RETRY_DELAY=30

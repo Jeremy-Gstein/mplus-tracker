@@ -1,7 +1,7 @@
 [package]
 name = "mplus-tracker"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [[bin]]
 name = "mplus-tracker"
@@ -29,6 +29,7 @@ toml = "0.8"
 
 # Date/time
 chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.9"
 
 # Hashing (dedupe)
 sha2 = "0.10"

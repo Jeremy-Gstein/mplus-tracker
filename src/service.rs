@@ -4,7 +4,7 @@ use anyhow::Result;
 use chrono::{DateTime, Months, Utc};
 use std::sync::Arc;
 use tokio::sync::Semaphore;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::{
     config::Config,
@@ -213,6 +213,17 @@ pub async fn update_character(
     let mut ignored = 0usize;
 
     for rio_run in profile.mythic_plus_recent_runs.unwrap_or_default() {
+        // Only track timed (non-depleted) runs
+        if rio_run.num_keystone_upgrades == 0 {
+            ignored += 1;
+            debug!(
+                dungeon = %rio_run.short_name,
+                level   = rio_run.mythic_level,
+                "Skipping depleted run (num_keystone_upgrades=0)"
+            );
+            continue;
+        }
+
         let source_run_id = match &rio_run.id {
             Some(serde_json::Value::Number(n)) => Some(n.to_string()),
             Some(serde_json::Value::String(s)) => Some(s.clone()),
@@ -247,7 +258,7 @@ pub async fn update_character(
             dungeon_short: rio_run.short_name.clone(),
             key_level: rio_run.mythic_level,
             completed_at,
-            within_time: rio_run.num_keystone_upgrades > 0,
+            within_time: true, // guaranteed by the num_keystone_upgrades > 0 gate above
             season: None,
             url: rio_run.url.clone(),
             source_run_id: source_run_id.clone(),
@@ -290,6 +301,7 @@ pub struct UpdateAllResult {
     pub total_characters: usize,
     pub updated_ok: usize,
     pub failed: usize,
+    pub pruned: usize,
     pub errors: Vec<String>,
 }
 
@@ -298,27 +310,46 @@ pub async fn update_all_characters(state: &AppState) -> Result<UpdateAllResult> 
     let total = chars.len();
     let mut ok = 0usize;
     let mut failed = 0usize;
+    let mut pruned = 0usize;
     let mut errors = Vec::new();
 
-    // Process concurrently, bounded by the semaphore inside update_character
+    // Each task carries (region, realm, name) so we can prune on 400.
     let mut handles = Vec::new();
     for c in chars {
         let state = state.clone();
         let h = tokio::spawn(async move {
             let r = update_character(&state, &c.region, &c.realm, &c.name).await;
-            (c.name.clone(), r)
+            (c.region.clone(), c.realm.clone(), c.name.clone(), r)
         });
         handles.push(h);
     }
 
     for handle in handles {
         match handle.await {
-            Ok((_name, Ok(_))) => ok += 1,
-            Ok((name, Err(e))) => {
-                failed += 1;
-                let msg = format!("{name}: {e}");
-                error!(error = msg, "update_character failed");
-                errors.push(msg);
+            Ok((_region, _realm, _name, Ok(_))) => ok += 1,
+            Ok((region, realm, name, Err(e))) => {
+                let msg = e.to_string();
+                // Raider.IO 400 = character doesn't exist (deleted, renamed, or
+                // bogus NPC entry from guild roster). Auto-prune from DB so it
+                // stops polluting future update_all runs.
+                if msg.contains("400 Bad Request")
+                    && msg.contains("Could not find requested character")
+                {
+                    warn!(
+                        character = %name,
+                        realm = %realm,
+                        region = %region,
+                        "Auto-pruning character not found on Raider.IO (400)"
+                    );
+                    if let Err(db_err) = state.db.delete_character(&region, &realm, &name).await {
+                        error!(error = %db_err, "Failed to prune character from DB");
+                    }
+                    pruned += 1;
+                } else {
+                    failed += 1;
+                    error!(error = %msg, "update_character failed");
+                    errors.push(format!("{name}: {msg}"));
+                }
             }
             Err(e) => {
                 failed += 1;
@@ -327,12 +358,13 @@ pub async fn update_all_characters(state: &AppState) -> Result<UpdateAllResult> 
         }
     }
 
-    info!(total, ok, failed, "update_all completed");
+    info!(total, ok, failed, pruned, "update_all completed");
 
     Ok(UpdateAllResult {
         total_characters: total,
         updated_ok: ok,
         failed,
+        pruned,
         errors,
     })
 }

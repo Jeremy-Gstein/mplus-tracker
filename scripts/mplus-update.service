@@ -1,0 +1,46 @@
+# =============================================================================
+# /etc/systemd/system/mplus-update.service
+#
+# Runs the mplus-tracker update-all script as a one-shot service.
+# Triggered by mplus-update.timer — do not set WantedBy here.
+# =============================================================================
+
+[Unit]
+Description=MPTracker — Trigger update/all to refresh Mythic+ run cache
+Documentation=https://github.com/yourrepo/mplus-tracker
+# Only run if network is available
+After=network-online.target
+Wants=network-online.target
+# Don't fail the timer if Docker isn't up yet
+After=docker.service
+
+[Service]
+Type=oneshot
+
+# Run as a dedicated low-privilege user (created by setup.sh)
+User=mplus-tracker
+Group=mplus-tracker
+
+# Script location — matches where setup.sh installs it
+ExecStart=/usr/local/bin/mplus-update.sh
+
+# Point at the config file
+Environment=MPLUS_CONF=/etc/mplus-tracker/update.conf
+
+# Harden the service
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/tmp
+
+# Logging — view with: journalctl -u mplus-update
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mplus-update
+
+# Give the update plenty of time (large guilds + rate limiting can be slow)
+TimeoutStartSec=600
+
+[Install]
+# Not installed directly — started by the timer unit

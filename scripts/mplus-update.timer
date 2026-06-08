@@ -1,0 +1,28 @@
+# =============================================================================
+# /etc/systemd/system/mplus-update.timer
+#
+# Fires mplus-update.service every 3 hours, starting 2 minutes after boot
+# to give Docker / the tracker container time to come up.
+# =============================================================================
+
+[Unit]
+Description=MPTracker — Periodic update/all every 3 hours
+Documentation=https://github.com/yourrepo/mplus-tracker
+
+[Timer]
+# Wait 2 minutes after boot before the first run
+OnBootSec=2min
+
+# Then fire every 3 hours from that point
+OnUnitActiveSec=3h
+
+# If the system was off during a scheduled run, fire once on next boot
+# (covered by OnBootSec above — Persistent= would re-fire missed timers
+#  immediately on boot, which may not be desirable for a heavy API job)
+Persistent=false
+
+# Which service to trigger
+Unit=mplus-update.service
+
+[Install]
+WantedBy=timers.target

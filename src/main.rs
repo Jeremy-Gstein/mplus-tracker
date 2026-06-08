@@ -2,7 +2,7 @@
 
 use anyhow::{Context, Result};
 use axum::{
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use std::net::SocketAddr;
@@ -10,6 +10,7 @@ use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
+mod auth;
 mod config;
 mod db;
 mod handlers;
@@ -19,6 +20,7 @@ mod raiderio;
 mod service;
 mod time_window;
 
+use auth::BearerAuthLayer;
 use config::{config_path, Config};
 use db::Database;
 use raiderio::RaiderIoClient;
@@ -42,6 +44,16 @@ async fn main() -> Result<()> {
 
     info!("mplus-tracker starting up");
 
+    // ── Auth token ─────────────────────────────────────────────────────────
+    // Must be set via environment — fail loudly at startup if missing.
+    // Generate with:  openssl rand -hex 32
+    let api_token = std::env::var("API_TOKEN")
+        .context("API_TOKEN env var is required. Generate with: openssl rand -hex 32")?;
+    if api_token.len() < 32 {
+        anyhow::bail!("API_TOKEN is too short — use at least 32 characters");
+    }
+    info!("Bearer auth enabled (token length: {} chars)", api_token.len());
+
     // ── Config ─────────────────────────────────────────────────────────────
     let cfg_path = config_path();
     info!(path = %cfg_path, "Loading config");
@@ -63,13 +75,20 @@ async fn main() -> Result<()> {
 
     // ── Router ─────────────────────────────────────────────────────────────
     let app = Router::new()
-        // Health
+        // Health — also exempted inside BearerAuthLayer, belt-and-suspenders
         .route("/health", get(handlers::get_health))
         // Update endpoints
         .route("/update/guild",     post(handlers::post_update_guild))
         .route("/update/character", post(handlers::post_update_character))
         .route("/update/all",       post(handlers::post_update_all))
+        // Character management
+        .route(
+            "/character/:region/:realm/:name",
+            delete(handlers::delete_character),
+        )
         // Query endpoints
+        .route("/players", get(handlers::get_players))
+        .route("/leaderboard", get(handlers::get_leaderboard))
         .route(
             "/character/:region/:realm/:name/keys",
             get(handlers::get_character_keys),
@@ -85,6 +104,9 @@ async fn main() -> Result<()> {
         .route("/debug/characters",    get(handlers::get_debug_characters))
         .route("/debug/stats",         get(handlers::get_debug_stats))
         .route("/debug/hash-check",    get(handlers::get_debug_hash_check))
+        .route("/debug/depletions",     get(handlers::get_debug_depletions))
+        // Auth layer wraps everything
+        .layer(BearerAuthLayer::new(api_token))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))

@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   app:
     build:
@@ -23,6 +21,24 @@ services:
       MAX_CONCURRENT_RAIDERIO: "3"
       # Log level: trace | debug | info | warn | error
       RUST_LOG: "info,mplus_tracker=debug"
+      # Authorization Header - openssl rand -hex 32
+      API_TOKEN: "${API_TOKEN}"
+    env_file:
+      - .env
+  
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: mplus-tracker-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: "${CLOUDFLARED_TUNNEL_TOKEN}"
+    env_file:
+      - .env
+    depends_on:
+      - app
+    networks:
+      - default
 
 volumes:
   mplus-db:

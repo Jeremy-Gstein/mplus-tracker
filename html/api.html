@@ -26,421 +26,153 @@
   --purple:   #bc8cff;
   --purple-bg:rgba(188,140,255,0.1);
   --cyan:     #39d0db;
-  --cyan-bg:  rgba(57,208,219,0.1);
   --get:      #238636;
   --get-bg:   rgba(35,134,54,0.15);
   --post:     #bb6900;
   --post-bg:  rgba(187,105,0,0.15);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* ─── Layout ─── */
-.layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: 100vh;
-}
+.layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
 
-/* ─── Sidebar ─── */
-.sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  padding: 0 0 40px;
-}
+.sidebar { background: var(--bg2); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 0 0 40px; }
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg2); z-index: 10; }
+.sidebar-logo h1 { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+.sidebar-logo .version { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
 
-.sidebar-logo {
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--bg2);
-  z-index: 10;
-}
-
-.sidebar-logo h1 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.5px;
-}
-.sidebar-logo .version {
-  font-size: 11px;
-  color: var(--text3);
-  font-family: 'JetBrains Mono', monospace;
-  margin-top: 2px;
-}
+/* ── Auth area in sidebar ── */
+.sidebar-auth { padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(88,166,255,0.04); }
+.sidebar-auth-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.auth-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; transition: background 0.2s; }
+.auth-dot.set   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.auth-dot.unset { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+.sidebar-auth input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 5px 8px; border-radius: 4px; outline: none; margin-bottom: 6px; }
+.sidebar-auth input:focus { border-color: var(--accent); }
+.sidebar-auth-status { font-size: 10px; color: var(--text3); }
 
 .nav-group { padding: 16px 0 0; }
-.nav-group-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text3);
-  padding: 0 20px 6px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 20px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text2);
-  transition: all 0.12s;
-  border-left: 2px solid transparent;
-}
+.nav-group-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); padding: 0 20px 6px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 6px 20px; cursor: pointer; font-size: 13px; color: var(--text2); transition: all 0.12s; border-left: 2px solid transparent; }
 .nav-item:hover { background: var(--bg3); color: var(--text); border-left-color: var(--border2); }
 .nav-item.active { background: rgba(88,166,255,0.08); color: var(--accent); border-left-color: var(--accent); }
 
-.badge {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.5px;
-}
-.badge-get  { background: var(--get-bg);    color: #4ac26b; border: 1px solid rgba(74,194,107,0.3); }
-.badge-post { background: var(--post-bg);   color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+.badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; }
+.badge-get  { background: var(--get-bg);  color: #4ac26b; border: 1px solid rgba(74,194,107,0.3); }
+.badge-post { background: var(--post-bg); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
 
-/* ─── Main ─── */
-.main {
-  padding: 0 48px 80px;
-  max-width: 960px;
-}
+.main { padding: 0 48px 80px; max-width: 960px; }
 
-/* ─── Hero ─── */
-.hero {
-  padding: 48px 0 32px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 40px;
-}
-.hero h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 10px;
-}
+/* ── Auth modal ── */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-backdrop.hidden { display: none; }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 32px; width: 440px; max-width: 90vw; box-shadow: 0 0 60px rgba(0,0,0,0.6); }
+.modal-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.modal-desc { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+.modal-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.modal-field label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; }
+.modal-field input { background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 8px 12px; border-radius: 4px; outline: none; transition: border-color 0.15s; }
+.modal-field input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+.modal-err { font-size: 11px; color: var(--red); min-height: 16px; margin-bottom: 6px; }
+.btn-primary { background: var(--accent); color: #000; border: none; font-size: 13px; font-weight: 600; padding: 8px 20px; border-radius: 5px; cursor: pointer; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-ghost { background: none; border: 1px solid var(--border2); color: var(--text2); font-size: 13px; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+/* ── Hero ── */
+.hero { padding: 48px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.hero h1 { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
 .hero p { color: var(--text2); max-width: 600px; line-height: 1.7; }
-.hero-meta {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-.hero-chip {
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  padding: 4px 10px;
-  border-radius: 20px;
-  color: var(--text2);
-}
+.hero-meta { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
+.hero-chip { font-size: 12px; font-family: 'JetBrains Mono', monospace; background: var(--bg3); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; color: var(--text2); }
 .hero-chip strong { color: var(--text); }
+#hero-auth-chip { cursor: pointer; transition: border-color 0.15s; }
+#hero-auth-chip:hover { border-color: var(--accent); }
+#hero-auth-chip.chip-set   { border-color: rgba(63,185,80,0.5); }
+#hero-auth-chip.chip-unset { border-color: rgba(248,81,73,0.4); }
 
-/* ─── Section ─── */
+/* ── Sections / endpoints ── */
 .section { margin-bottom: 16px; }
+.section-header { display: flex; align-items: center; gap: 12px; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.section-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.section-desc { color: var(--text2); font-size: 13px; margin-bottom: 24px; line-height: 1.7; }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 24px 0 16px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-}
-.section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-}
-.section-desc {
-  color: var(--text2);
-  font-size: 13px;
-  margin-bottom: 24px;
-  line-height: 1.7;
-}
-
-/* ─── Endpoint card ─── */
-.endpoint {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  scroll-margin-top: 20px;
-}
-
-.endpoint-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.12s;
-}
+.endpoint { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; scroll-margin-top: 20px; }
+.endpoint-header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; user-select: none; transition: background 0.12s; }
 .endpoint-header:hover { background: var(--bg3); }
-
-.method {
-  font-size: 11px;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-  padding: 3px 9px;
-  border-radius: 4px;
-  min-width: 52px;
-  text-align: center;
-}
+.method { font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 3px 9px; border-radius: 4px; min-width: 52px; text-align: center; }
 .method-get  { background: var(--get-bg);  color: #4ac26b; border: 1px solid rgba(74,194,107,0.3); }
 .method-post { background: var(--post-bg); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
-
-.endpoint-path {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  flex: 1;
-}
+.method-del  { background: var(--red-bg);  color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+.endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
 .path-param { color: var(--purple); }
-
-.endpoint-summary {
-  font-size: 12px;
-  color: var(--text2);
-}
-
-.chevron {
-  color: var(--text3);
-  font-size: 12px;
-  transition: transform 0.2s;
-}
+.endpoint-summary { font-size: 12px; color: var(--text2); }
+.chevron { color: var(--text3); font-size: 12px; transition: transform 0.2s; }
 .endpoint.open .chevron { transform: rotate(90deg); }
-
-.endpoint-body {
-  display: none;
-  border-top: 1px solid var(--border);
-  padding: 20px;
-}
+.endpoint-body { display: none; border-top: 1px solid var(--border); padding: 20px; }
 .endpoint.open .endpoint-body { display: block; }
 
-/* ─── Description ─── */
-.ep-desc {
-  color: var(--text2);
-  font-size: 13px;
-  margin-bottom: 20px;
-  line-height: 1.7;
-}
+.ep-desc { color: var(--text2); font-size: 13px; margin-bottom: 20px; line-height: 1.7; }
 
-/* ─── Params table ─── */
-.params-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 8px;
-}
-
-.params-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  margin-bottom: 20px;
-}
-.params-table th {
-  text-align: left;
-  padding: 7px 12px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text3);
-  background: var(--bg3);
-  border-bottom: 1px solid var(--border);
-}
-.params-table td {
-  padding: 9px 12px;
-  border-bottom: 1px solid rgba(48,54,61,0.5);
-  vertical-align: top;
-}
+.params-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; margin-top: 16px; }
+.params-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+.params-table th { text-align: left; padding: 7px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); background: var(--bg3); border-bottom: 1px solid var(--border); }
+.params-table td { padding: 9px 12px; border-bottom: 1px solid rgba(48,54,61,0.5); vertical-align: top; }
 .params-table tr:last-child td { border-bottom: none; }
-
-.param-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--accent);
-  white-space: nowrap;
-}
-.param-required {
-  font-size: 10px;
-  color: var(--red);
-  font-weight: 600;
-}
-.param-optional {
-  font-size: 10px;
-  color: var(--text3);
-}
-.param-type {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--purple);
-}
-.param-default {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text3);
-}
+.param-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); white-space: nowrap; }
+.param-required { font-size: 10px; color: var(--red); font-weight: 600; }
+.param-optional { font-size: 10px; color: var(--text3); }
+.param-type { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--purple); }
+.param-default { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
 .param-desc { color: var(--text2); font-size: 13px; }
-.param-enum {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
-}
-.enum-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  background: var(--bg4);
-  border: 1px solid var(--border2);
-  padding: 1px 6px;
-  border-radius: 3px;
-  color: var(--cyan);
-}
+.param-enum { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.enum-val { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--bg4); border: 1px solid var(--border2); padding: 1px 6px; border-radius: 3px; color: var(--cyan); }
 
-/* ─── Code blocks ─── */
-.code-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 6px;
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.code-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; }
+.code-block { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); white-space: pre; overflow-x: auto; line-height: 1.7; position: relative; }
 
-.code-block {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 14px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--text2);
-  white-space: pre;
-  overflow-x: auto;
-  line-height: 1.7;
-  position: relative;
-}
+/* live try-it area */
+.try-it { margin-top: 16px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+.try-it-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.try-it-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); }
+.try-btn { background: var(--accent); color: #000; border: none; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; }
+.try-btn:hover { opacity: 0.85; }
+.try-btn.post-btn { background: var(--orange); color: #000; }
+.try-result { padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text2); white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; min-height: 36px; line-height: 1.6; }
+.try-empty { color: var(--text3); font-style: italic; }
+.try-err { color: var(--red); }
+.try-ok  { color: var(--green); }
 
-.copy-btn {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--text2);
-  font-size: 10px;
-  font-family: 'Inter', sans-serif;
-  padding: 2px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.12s;
-}
+.copy-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 10px; font-family: 'Inter', sans-serif; padding: 2px 8px; border-radius: 4px; cursor: pointer; transition: all 0.12s; }
 .copy-btn:hover { background: var(--bg4); color: var(--text); }
 .copy-btn.copied { color: var(--green); border-color: var(--green); }
 
-/* ─── JSON syntax ─── */
-.jk { color: var(--accent); }
-.js { color: var(--green); }
-.jn { color: var(--orange); }
-.jb { color: var(--red); }
-.jl { color: var(--text3); }
+.jk { color: var(--accent); } .js { color: var(--green); } .jn { color: var(--orange); } .jb { color: var(--red); } .jl { color: var(--text3); }
 
-/* ─── Response codes ─── */
-.resp-codes {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-  margin-top: 16px;
-}
-.resp-code {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 4px;
-}
-.resp-2xx { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+.resp-codes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; margin-top: 16px; }
+.resp-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px; }
+.resp-2xx { background: var(--green-bg); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
 .resp-4xx { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(210,153,34,0.3); }
-.resp-5xx { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+.resp-5xx { background: var(--red-bg); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
 
-/* ─── Info box ─── */
-.info-box {
-  background: rgba(88,166,255,0.07);
-  border: 1px solid rgba(88,166,255,0.2);
-  border-radius: 6px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: var(--text2);
-  margin-bottom: 20px;
-  line-height: 1.7;
-}
+.info-box { background: rgba(88,166,255,0.07); border: 1px solid rgba(88,166,255,0.2); border-radius: 6px; padding: 12px 16px; font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.7; }
 .info-box strong { color: var(--accent); }
-
-.warn-box {
-  background: var(--orange-bg);
-  border: 1px solid rgba(210,153,34,0.3);
-  border-radius: 6px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: var(--text2);
-  margin-bottom: 16px;
-}
+.warn-box { background: var(--orange-bg); border: 1px solid rgba(210,153,34,0.3); border-radius: 6px; padding: 12px 16px; font-size: 13px; color: var(--text2); margin-bottom: 16px; }
 .warn-box strong { color: var(--orange); }
+.auth-box { background: rgba(248,81,73,0.06); border: 1px solid rgba(248,81,73,0.25); border-radius: 6px; padding: 12px 16px; font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.7; }
+.auth-box strong { color: var(--red); }
 
-/* ─── Schema ─── */
-.schema-grid {
-  display: grid;
-  gap: 4px;
-  margin-top: 8px;
-}
-.schema-row {
-  display: grid;
-  grid-template-columns: 180px 120px 1fr;
-  gap: 12px;
-  font-size: 12px;
-  padding: 5px 8px;
-  border-radius: 4px;
-}
+.schema-grid { display: grid; gap: 4px; margin-top: 8px; }
+.schema-row { display: grid; grid-template-columns: 180px 120px 1fr; gap: 12px; font-size: 12px; padding: 5px 8px; border-radius: 4px; }
 .schema-row:nth-child(odd) { background: var(--bg3); }
 .schema-field { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
 .schema-type  { font-family: 'JetBrains Mono', monospace; color: var(--purple); }
 .schema-note  { color: var(--text2); }
 
-/* ─── Divider ─── */
-.divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 12px 0 20px;
-}
+.divider { border: none; border-top: 1px solid var(--border); margin: 12px 0 20px; }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -449,95 +181,126 @@ a:hover { text-decoration: underline; }
 </head>
 <body>
 
+<!-- ── Auth modal ── -->
+<div class="modal-backdrop hidden" id="authModal">
+  <div class="modal">
+    <div class="modal-title">Configure API Connection</div>
+    <div class="modal-desc">Set your base URL and bearer token. These are saved for the session — you won't be asked again until you close the tab.</div>
+    <div class="modal-field">
+      <label>Base URL</label>
+      <input type="text" id="modalUrl" value="http://localhost:8080" placeholder="https://tracker.example.com">
+    </div>
+    <div class="modal-field">
+      <label>Bearer Token</label>
+      <input type="password" id="modalToken" placeholder="Paste your API_TOKEN here" autocomplete="off">
+    </div>
+    <div class="modal-err" id="modalErr"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitAuth()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="layout">
 
-<!-- ─── Sidebar ─── -->
+<!-- ── Sidebar ── -->
 <nav class="sidebar">
   <div class="sidebar-logo">
     <h1>MPTracker API</h1>
     <div class="version">v0.1 · SQLite · Axum</div>
   </div>
 
+  <!-- inline auth config -->
+  <div class="sidebar-auth">
+    <div class="sidebar-auth-label">
+      <div class="auth-dot unset" id="sidebarDot"></div>
+      Auth Token
+    </div>
+    <input type="text" id="sidebarUrl" placeholder="Base URL" oninput="saveConfig()" autocomplete="off">
+    <input type="password" id="sidebarToken" placeholder="Bearer token" oninput="saveConfig()" autocomplete="off">
+    <div class="sidebar-auth-status" id="sidebarStatus">not configured</div>
+  </div>
+
   <div class="nav-group">
     <div class="nav-group-label">Overview</div>
-    <div class="nav-item active" onclick="scrollTo('intro')">Introduction</div>
-    <div class="nav-item" onclick="scrollTo('errors')">Errors & Scopes</div>
+    <div class="nav-item active" onclick="scrollToSection('intro')">Introduction</div>
+    <div class="nav-item" onclick="scrollToSection('auth-section')">Authentication</div>
+    <div class="nav-item" onclick="scrollToSection('errors')">Errors &amp; Scopes</div>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">System</div>
-    <div class="nav-item" onclick="scrollTo('health')">
-      <span class="badge badge-get">GET</span> Health
-    </div>
+    <div class="nav-item" onclick="scrollToSection('health')"><span class="badge badge-get">GET</span> Health</div>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Updates</div>
-    <div class="nav-item" onclick="scrollTo('update-guild')">
-      <span class="badge badge-post">POST</span> Update Guild
-    </div>
-    <div class="nav-item" onclick="scrollTo('update-character')">
-      <span class="badge badge-post">POST</span> Update Character
-    </div>
-    <div class="nav-item" onclick="scrollTo('update-all')">
-      <span class="badge badge-post">POST</span> Update All
-    </div>
+    <div class="nav-item" onclick="scrollToSection('update-guild')"><span class="badge badge-post">POST</span> Update Guild</div>
+    <div class="nav-item" onclick="scrollToSection('update-character')"><span class="badge badge-post">POST</span> Update Character</div>
+    <div class="nav-item" onclick="scrollToSection('update-all')"><span class="badge badge-post">POST</span> Update All</div>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Queries</div>
-    <div class="nav-item" onclick="scrollTo('character-keys')">
-      <span class="badge badge-get">GET</span> Character Keys
-    </div>
-    <div class="nav-item" onclick="scrollTo('player-keys')">
-      <span class="badge badge-get">GET</span> Player Keys
-    </div>
-    <div class="nav-item" onclick="scrollTo('guild-roster')">
-      <span class="badge badge-get">GET</span> Guild Roster
-    </div>
+    <div class="nav-item" onclick="scrollToSection('players')"><span class="badge badge-get">GET</span> Players</div>
+    <div class="nav-item" onclick="scrollToSection('character-keys')"><span class="badge badge-get">GET</span> Character Keys</div>
+    <div class="nav-item" onclick="scrollToSection('player-keys')"><span class="badge badge-get">GET</span> Player Keys</div>
+    <div class="nav-item" onclick="scrollToSection('guild-roster')"><span class="badge badge-get">GET</span> Guild Roster</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Management</div>
+    <div class="nav-item" onclick="scrollToSection('delete-character')"><span class="badge" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(248,81,73,0.3)">DEL</span> Delete Character</div>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Debug</div>
-    <div class="nav-item" onclick="scrollTo('debug-stats')">
-      <span class="badge badge-get">GET</span> DB Stats
-    </div>
-    <div class="nav-item" onclick="scrollTo('debug-runs')">
-      <span class="badge badge-get">GET</span> All Runs
-    </div>
-    <div class="nav-item" onclick="scrollTo('debug-guild-runs')">
-      <span class="badge badge-get">GET</span> Guild Runs
-    </div>
-    <div class="nav-item" onclick="scrollTo('debug-characters')">
-      <span class="badge badge-get">GET</span> All Characters
-    </div>
-    <div class="nav-item" onclick="scrollTo('debug-hash')">
-      <span class="badge badge-get">GET</span> Hash Check
-    </div>
+    <div class="nav-item" onclick="scrollToSection('debug-stats')"><span class="badge badge-get">GET</span> DB Stats</div>
+    <div class="nav-item" onclick="scrollToSection('debug-runs')"><span class="badge badge-get">GET</span> All Runs</div>
+    <div class="nav-item" onclick="scrollToSection('debug-guild-runs')"><span class="badge badge-get">GET</span> Guild Runs</div>
+    <div class="nav-item" onclick="scrollToSection('debug-characters')"><span class="badge badge-get">GET</span> All Characters</div>
+    <div class="nav-item" onclick="scrollToSection('debug-hash')"><span class="badge badge-get">GET</span> Hash Check</div>
   </div>
 </nav>
 
-<!-- ─── Main ─── -->
+<!-- ── Main ── -->
 <div class="main">
 
   <!-- HERO -->
   <div class="hero" id="intro">
     <h1>MPTracker API</h1>
-    <p>REST API for tracking Mythic+ keystones run by guild members. Queries Raider.IO for character and guild data, stores runs in SQLite, and exposes counts and history for external consumers (WeakAuras, Discord bots, dashboards).</p>
+    <p>REST API for tracking Mythic+ keystones run by guild members. Queries Raider.IO for character and guild data, stores runs in SQLite, and exposes counts and history for external consumers (Discord bots, dashboards, WeakAuras).</p>
     <div class="hero-meta">
-      <div class="hero-chip">Base URL: <strong>http://localhost:8080</strong></div>
+      <div class="hero-chip" id="hero-url-chip">Base URL: <strong id="hero-url-text">http://localhost:8080</strong></div>
       <div class="hero-chip">Format: <strong>application/json</strong></div>
-      <div class="hero-chip">Auth: <strong>none</strong></div>
+      <div class="hero-chip chip-unset" id="hero-auth-chip" onclick="openModal()" title="Click to configure token">
+        Auth: <strong id="hero-auth-text">⚠ not set</strong>
+      </div>
       <div class="hero-chip">Storage: <strong>SQLite (WAL)</strong></div>
     </div>
   </div>
 
+  <!-- AUTH -->
+  <div class="section" id="auth-section">
+    <div class="section-header"><div class="section-title">Authentication</div></div>
+    <div class="auth-box">
+      <strong>Bearer token required.</strong> Every request (except <code>GET /health</code>) must include an <code>Authorization</code> header. Requests without a valid token receive <code>401 Unauthorized</code>.
+    </div>
+    <div class="info-box">
+      <strong>Header format</strong><br>
+      <code>Authorization: Bearer &lt;your API_TOKEN&gt;</code><br><br>
+      Generate a token on the server with:<br>
+      <code>openssl rand -hex 32</code><br><br>
+      Set it as <code>API_TOKEN</code> in your <code>.env</code> file next to <code>docker-compose.yml</code>. Use the sidebar or the chip above to configure it here for live Try It requests.
+    </div>
+    <div class="code-label">Example curl with auth</div>
+    <div class="code-block" id="auth-example-block">curl -H 'Authorization: Bearer &lt;token&gt;' 'http://localhost:8080/debug/stats'</div>
+  </div>
+
   <!-- ERRORS & SCOPES -->
   <div class="section" id="errors">
-    <div class="section-header">
-      <div class="section-title">Errors &amp; Common Concepts</div>
-    </div>
-
+    <div class="section-header"><div class="section-title">Errors &amp; Common Concepts</div></div>
     <p class="section-desc">All error responses use the same envelope. The <code>scope</code> parameter controls the time window for all query endpoints and is region-aware for weekly resets.</p>
 
     <div class="info-box">
@@ -552,67 +315,50 @@ a:hover { text-decoration: underline; }
     <table class="params-table">
       <thead><tr><th>Value</th><th>Window</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr>
-          <td><span class="param-type">today</span></td>
-          <td class="param-desc">UTC midnight → now</td>
-          <td class="param-desc">Calendar day in UTC</td>
-        </tr>
-        <tr>
-          <td><span class="param-type">week</span></td>
-          <td class="param-desc">Last weekly reset → now</td>
-          <td class="param-desc">NA: Tue 15:00 UTC · EU: Wed 07:00 UTC. Pass <code>region=eu</code> to use EU reset.</td>
-        </tr>
-        <tr>
-          <td><span class="param-type">alltime</span></td>
-          <td class="param-desc">Epoch → now</td>
-          <td class="param-desc">Default when scope is omitted</td>
-        </tr>
-        <tr>
-          <td><span class="param-type">custom</span></td>
-          <td class="param-desc"><code>from</code> → <code>to</code></td>
-          <td class="param-desc">Requires both <code>from</code> and <code>to</code> as RFC3339 strings</td>
-        </tr>
+        <tr><td><span class="param-type">today</span></td><td class="param-desc">UTC midnight → now</td><td class="param-desc">Calendar day in UTC</td></tr>
+        <tr><td><span class="param-type">week</span></td><td class="param-desc">Last weekly reset → now</td><td class="param-desc">NA: Tue 09:00 America/New_York (DST-aware) · EU: Wed 07:00 UTC. Pass <code>region=eu</code> for EU reset.</td></tr>
+        <tr><td><span class="param-type">alltime</span></td><td class="param-desc">Epoch → now</td><td class="param-desc">Default when scope is omitted</td></tr>
+        <tr><td><span class="param-type">custom</span></td><td class="param-desc"><code>from</code> → <code>to</code></td><td class="param-desc">Requires both <code>from</code> and <code>to</code> as RFC3339 strings</td></tr>
       </tbody>
     </table>
 
     <div class="params-label">Deduplication</div>
-    <p class="ep-desc">Every run is assigned a deterministic <strong>hash</strong> derived from region, realm, character name, dungeon, level, timestamp, and source run ID. <code>INSERT … ON CONFLICT (hash) DO NOTHING</code> means re-crawling a character never creates duplicate rows — only genuinely new runs are inserted.</p>
+    <p class="ep-desc">Every run is assigned a deterministic <strong>hash</strong> derived from region, realm, character name, dungeon, level, timestamp, and source run ID. <code>INSERT … ON CONFLICT (hash) DO NOTHING</code> means re-crawling a character never creates duplicate rows.</p>
 
     <div class="params-label">Stale-crawl skip</div>
-    <p class="ep-desc">When updating a guild, members whose Raider.IO <code>last_crawled_at</code> is within the last 3 months are skipped for individual key updates (they are still upserted for roster tracking). This dramatically reduces rate-limit pressure on large guilds.</p>
+    <p class="ep-desc">When updating a guild, members whose Raider.IO <code>last_crawled_at</code> is within the last 3 months are skipped for individual key updates (still upserted for roster tracking). This dramatically reduces rate-limit pressure on large guilds.</p>
+
+    <div class="params-label">Depleted run filtering</div>
+    <p class="ep-desc">Runs with <code>num_keystone_upgrades = 0</code> (depleted / over-time) are rejected at ingest and never written to the database. All counts reflect timed completions only.</p>
   </div>
 
-  <!-- ─── HEALTH ─── -->
+  <!-- HEALTH -->
   <div class="section" id="health">
     <div class="section-header"><div class="section-title">System</div></div>
-
     <div class="endpoint open" id="ep-health">
       <div class="endpoint-header" onclick="toggle('ep-health')">
         <span class="method method-get">GET</span>
         <span class="endpoint-path">/health</span>
-        <span class="endpoint-summary">Server liveness check</span>
+        <span class="endpoint-summary">Server liveness check — no auth required</span>
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Returns 200 and basic build info when the server is alive. Use this to verify connectivity before making data calls.</p>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-        </div>
-
+        <p class="ep-desc">Returns 200 and basic build info when the server is alive. The only endpoint that bypasses bearer token authentication — useful for Docker healthchecks and uptime monitors.</p>
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
         <div class="code-label">Response</div>
         <div class="code-block">{
   <span class="jk">"status"</span>:  <span class="js">"ok"</span>,
   <span class="jk">"version"</span>: <span class="js">"0.1.0"</span>
 }</div>
-
-        <div class="code-label">Example <button class="copy-btn" onclick="copyText(this, 'curl http://localhost:8080/health')">copy</button></div>
-        <div class="code-block">curl http://localhost:8080/health</div>
+        <div class="try-it">
+          <div class="try-it-header"><span class="try-it-label">Try it</span><button class="try-btn" onclick="tryIt('GET','/health',null,'try-health')">Send</button></div>
+          <div class="try-result try-empty" id="try-health">Click Send to ping the server</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ─── UPDATES ─── -->
+  <!-- UPDATES -->
   <div class="section" id="update-guild">
     <div class="section-header"><div class="section-title">Updates</div></div>
     <p class="section-desc">Update endpoints pull fresh data from Raider.IO and persist it to the local database. All updates are idempotent — re-running them only inserts genuinely new runs.</p>
@@ -622,69 +368,32 @@ a:hover { text-decoration: underline; }
       <div class="endpoint-header" onclick="toggle('ep-update-guild')">
         <span class="method method-post">POST</span>
         <span class="endpoint-path">/update/guild</span>
-        <span class="endpoint-summary">Sync guild roster + queue member key updates</span>
+        <span class="endpoint-summary">Sync guild roster from Raider.IO</span>
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Fetches the guild profile from Raider.IO, upserts all members into the <code>characters</code> table, and queues individual key updates for members whose Raider.IO profile is stale (older than 3 months). Members crawled recently are upserted to keep the roster current but their key fetch is skipped.</p>
-
+        <p class="ep-desc">Fetches the guild profile from Raider.IO, upserts all members into the <code>characters</code> table. Members crawled recently by Raider.IO are upserted but their individual key fetch is skipped to conserve rate-limit budget.</p>
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
           <tbody>
-            <tr>
-              <td><span class="param-name">region</span></td>
-              <td><span class="param-type">string</span></td>
-              <td><span class="param-required">required</span></td>
-              <td class="param-desc">WoW region — <span class="enum-val">us</span> <span class="enum-val">eu</span> <span class="enum-val">kr</span> <span class="enum-val">tw</span></td>
-            </tr>
-            <tr>
-              <td><span class="param-name">realm</span></td>
-              <td><span class="param-type">string</span></td>
-              <td><span class="param-required">required</span></td>
-              <td class="param-desc">Realm name, e.g. <code>Stormrage</code></td>
-            </tr>
-            <tr>
-              <td><span class="param-name">name</span></td>
-              <td><span class="param-type">string</span></td>
-              <td><span class="param-required">required</span></td>
-              <td class="param-desc">Guild name, e.g. <code>Seems Good</code></td>
-            </tr>
+            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">WoW region — <span class="enum-val">us</span> <span class="enum-val">eu</span> <span class="enum-val">kr</span> <span class="enum-val">tw</span></td></tr>
+            <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">Realm name, e.g. <code>Stormrage</code></td></tr>
+            <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">Guild name, e.g. <code>Seems Good</code></td></tr>
           </tbody>
         </table>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-          <span class="resp-code resp-4xx">400 Bad Request</span>
-          <span class="resp-code resp-5xx">500 Server Error</span>
-        </div>
-
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">400 Bad Request</span><span class="resp-code resp-5xx">500 Server Error</span></div>
         <div class="code-label">Response schema</div>
         <div class="schema-grid">
           <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note">Unique ID for this request</span></div>
-          <div class="schema-row"><span class="schema-field">guild.region</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
-          <div class="schema-row"><span class="schema-field">guild.realm</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
-          <div class="schema-row"><span class="schema-field">guild.name</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
+          <div class="schema-row"><span class="schema-field">guild.region/realm/name</span><span class="schema-type">string</span><span class="schema-note">Echoed from input</span></div>
           <div class="schema-row"><span class="schema-field">members_added</span><span class="schema-type">integer</span><span class="schema-note">New characters inserted this run</span></div>
           <div class="schema-row"><span class="schema-field">members_updated</span><span class="schema-type">integer</span><span class="schema-note">Existing characters refreshed</span></div>
           <div class="schema-row"><span class="schema-field">members_skipped_fresh</span><span class="schema-type">integer</span><span class="schema-note">Members skipped — crawled by RIO recently</span></div>
         </div>
-
-        <div class="code-label">Example response</div>
-        <div class="code-block">{
-  <span class="jk">"request_id"</span>:           <span class="js">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>,
-  <span class="jk">"guild"</span>: {
-    <span class="jk">"region"</span>: <span class="js">"us"</span>,
-    <span class="jk">"realm"</span>:  <span class="js">"Stormrage"</span>,
-    <span class="jk">"name"</span>:   <span class="js">"Seems Good"</span>
-  },
-  <span class="jk">"members_added"</span>:         <span class="jn">3</span>,
-  <span class="jk">"members_updated"</span>:       <span class="jn">412</span>,
-  <span class="jk">"members_skipped_fresh"</span>: <span class="jn">103</span>
-}</div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST 'http://localhost:8080/update/guild?region=us&realm=Stormrage&name=Seems%20Good'`)">copy</button></div>
-        <div class="code-block">curl -X POST 'http://localhost:8080/update/guild?region=us&amp;realm=Stormrage&amp;name=Seems%20Good'</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST -H 'Authorization: Bearer <token>' 'http://localhost:8080/update/guild?region=us&realm=Stormrage&name=Seems%20Good'`)">copy</button></div>
+        <div class="code-block">curl -X POST -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/update/guild?region=us&amp;realm=Stormrage&amp;name=Seems%20Good'</div>
       </div>
     </div>
 
@@ -697,8 +406,7 @@ a:hover { text-decoration: underline; }
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Fetches <code>mythic_plus_recent_runs</code> for the given character from Raider.IO and inserts any new runs into the database. Existing runs (identified by hash) are silently skipped — the count is reflected in <code>runs_ignored</code>.</p>
-
+        <p class="ep-desc">Fetches <code>mythic_plus_recent_runs</code> for the given character from Raider.IO and inserts any new timed runs into the database. Depleted runs (<code>num_keystone_upgrades = 0</code>) and duplicates (by hash) are silently skipped.</p>
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
@@ -708,39 +416,18 @@ a:hover { text-decoration: underline; }
             <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">Character name</td></tr>
           </tbody>
         </table>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-          <span class="resp-code resp-4xx">400 Bad Request</span>
-          <span class="resp-code resp-5xx">500 Server Error</span>
-        </div>
-
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">400 Bad Request</span><span class="resp-code resp-5xx">500 Server Error</span></div>
         <div class="code-label">Response schema</div>
         <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note">Unique ID for this request</span></div>
-          <div class="schema-row"><span class="schema-field">character.region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">character.realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">character.name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">runs_inserted</span><span class="schema-type">integer</span><span class="schema-note">New runs written to DB this call</span></div>
-          <div class="schema-row"><span class="schema-field">runs_ignored</span><span class="schema-type">integer</span><span class="schema-note">Runs already in DB (hash collision — not duplicates)</span></div>
-          <div class="schema-row"><span class="schema-field">rate_limited</span><span class="schema-type">boolean</span><span class="schema-note">Always false — rate limit handled internally via retry/backoff</span></div>
+          <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">character.region/realm/name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
+          <div class="schema-row"><span class="schema-field">runs_inserted</span><span class="schema-type">integer</span><span class="schema-note">New timed runs written to DB</span></div>
+          <div class="schema-row"><span class="schema-field">runs_ignored</span><span class="schema-type">integer</span><span class="schema-note">Depleted or duplicate runs skipped</span></div>
+          <div class="schema-row"><span class="schema-field">rate_limited</span><span class="schema-type">boolean</span><span class="schema-note">Always false — retry handled internally</span></div>
         </div>
-
-        <div class="code-label">Example response</div>
-        <div class="code-block">{
-  <span class="jk">"request_id"</span>:   <span class="js">"c3d4e5f6-a1b2-7890-cdef-123456789abc"</span>,
-  <span class="jk">"character"</span>: {
-    <span class="jk">"region"</span>: <span class="js">"us"</span>,
-    <span class="jk">"realm"</span>:  <span class="js">"Stormrage"</span>,
-    <span class="jk">"name"</span>:   <span class="js">"Duhva"</span>
-  },
-  <span class="jk">"runs_inserted"</span>: <span class="jn">4</span>,
-  <span class="jk">"runs_ignored"</span>:  <span class="jn">16</span>,
-  <span class="jk">"rate_limited"</span>:  <span class="jb">false</span>
-}</div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST 'http://localhost:8080/update/character?region=us&realm=Stormrage&name=Duhva'`)">copy</button></div>
-        <div class="code-block">curl -X POST 'http://localhost:8080/update/character?region=us&amp;realm=Stormrage&amp;name=Duhva'</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST -H 'Authorization: Bearer <token>' 'http://localhost:8080/update/character?region=us&realm=Stormrage&name=Duhva'`)">copy</button></div>
+        <div class="code-block">curl -X POST -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/update/character?region=us&amp;realm=Stormrage&amp;name=Duhva'</div>
       </div>
     </div>
 
@@ -753,49 +440,55 @@ a:hover { text-decoration: underline; }
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <div class="warn-box"><strong>⚠ High load:</strong> This triggers a Raider.IO fetch for every character in the database, bounded by the semaphore concurrency limit in <code>config.toml</code>. On large guilds this takes several minutes and burns significant rate-limit budget.</div>
-
-        <p class="ep-desc">Spawns a Tokio task per character, bounded by the shared semaphore. Returns aggregate counts when all tasks complete. Individual failures are collected into <code>errors</code> and do not abort the batch.</p>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-          <span class="resp-code resp-5xx">500 Server Error</span>
-        </div>
-
+        <div class="warn-box"><strong>⚠ High load:</strong> Triggers a Raider.IO fetch for every character in the database, bounded by the semaphore concurrency limit in <code>config.toml</code>. On large guilds this takes several minutes. Characters returning 400 "not found" are automatically pruned from the database.</div>
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-5xx">500 Server Error</span></div>
         <div class="code-label">Response schema</div>
         <div class="schema-grid">
           <div class="schema-row"><span class="schema-field">request_id</span><span class="schema-type">string (uuid)</span><span class="schema-note"></span></div>
           <div class="schema-row"><span class="schema-field">total_characters</span><span class="schema-type">integer</span><span class="schema-note">Total characters attempted</span></div>
           <div class="schema-row"><span class="schema-field">updated_ok</span><span class="schema-type">integer</span><span class="schema-note">Successfully fetched + synced</span></div>
-          <div class="schema-row"><span class="schema-field">failed</span><span class="schema-type">integer</span><span class="schema-note">Characters that errored (network, RIO 404, etc.)</span></div>
-          <div class="schema-row"><span class="schema-field">errors</span><span class="schema-type">string[]</span><span class="schema-note">Error messages for each failure</span></div>
+          <div class="schema-row"><span class="schema-field">failed</span><span class="schema-type">integer</span><span class="schema-note">Characters that errored (non-400)</span></div>
+          <div class="schema-row"><span class="schema-field">pruned</span><span class="schema-type">integer</span><span class="schema-note">Characters auto-deleted (RIO 400 not found)</span></div>
+          <div class="schema-row"><span class="schema-field">errors</span><span class="schema-type">string[]</span><span class="schema-note">Error messages for non-pruned failures</span></div>
         </div>
-
-        <div class="code-label">Example response</div>
-        <div class="code-block">{
-  <span class="jk">"request_id"</span>:       <span class="js">"f1e2d3c4-b5a6-0987-fedc-ba9876543210"</span>,
-  <span class="jk">"total_characters"</span>: <span class="jn">518</span>,
-  <span class="jk">"updated_ok"</span>:       <span class="jn">515</span>,
-  <span class="jk">"failed"</span>:           <span class="jn">3</span>,
-  <span class="jk">"errors"</span>: [
-    <span class="js">"Oldchar: RIO returned 404"</span>,
-    <span class="js">"Xfer: request timeout after 10s"</span>,
-    <span class="js">"Bankalt: RIO returned 404"</span>
-  ]
-}</div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, 'curl -X POST http://localhost:8080/update/all')">copy</button></div>
-        <div class="code-block">curl -X POST http://localhost:8080/update/all</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X POST -H 'Authorization: Bearer <token>' http://localhost:8080/update/all`)">copy</button></div>
+        <div class="code-block">curl -X POST -H 'Authorization: Bearer &lt;token&gt;' http://localhost:8080/update/all</div>
       </div>
     </div>
   </div>
 
-  <!-- ─── QUERIES ─── -->
-  <div class="section" id="character-keys">
+  <!-- QUERIES -->
+  <div class="section" id="players">
     <div class="section-header"><div class="section-title">Queries</div></div>
-    <p class="section-desc">Read-only endpoints for fetching run counts and roster data. The <code>scope</code> parameter controls the time window. Weekly reset boundaries are region-aware (NA vs EU).</p>
+    <p class="section-desc">Read-only endpoints for fetching player lists, run counts, and roster data.</p>
 
-    <!-- GET /character/:region/:realm/:name/keys -->
+    <!-- GET /players -->
+    <div class="endpoint" id="ep-players">
+      <div class="endpoint-header" onclick="toggle('ep-players')">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/players</span>
+        <span class="endpoint-summary">List all logical players and their character counts</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Returns all players defined in <code>config.toml</code> and seeded at startup. Used by the Discord bot to discover which player IDs to query. Each entry includes the human-readable label and the number of linked characters.</p>
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">players[].id</span><span class="schema-type">string</span><span class="schema-note">e.g. <code>player_ash</code></span></div>
+          <div class="schema-row"><span class="schema-field">players[].label</span><span class="schema-type">string</span><span class="schema-note">Human-readable name from config</span></div>
+          <div class="schema-row"><span class="schema-field">players[].character_count</span><span class="schema-type">integer</span><span class="schema-note">Number of linked characters</span></div>
+        </div>
+        <div class="try-it">
+          <div class="try-it-header"><span class="try-it-label">Try it</span><button class="try-btn" onclick="tryIt('GET','/players',null,'try-players')">Send</button></div>
+          <div class="try-result try-empty" id="try-players">Click Send to fetch the player list</div>
+        </div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' http://localhost:8080/players`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' http://localhost:8080/players</div>
+      </div>
+    </div>
+
+    <!-- GET /character keys -->
     <div class="endpoint" id="ep-character-keys">
       <div class="endpoint-header" onclick="toggle('ep-character-keys')">
         <span class="method method-get">GET</span>
@@ -804,8 +497,7 @@ a:hover { text-decoration: underline; }
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Returns the number of Mythic+ runs completed by the character within the requested time window. The character must already exist in the local database (run <code>POST /update/character</code> or <code>POST /update/guild</code> first).</p>
-
+        <p class="ep-desc">Returns the number of timed Mythic+ runs completed by the character within the requested time window. The character must already exist in the local database.</p>
         <div class="params-label">Path parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
@@ -815,129 +507,65 @@ a:hover { text-decoration: underline; }
             <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td class="param-desc">Character name (case-sensitive as stored)</td></tr>
           </tbody>
         </table>
-
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
-            <tr>
-              <td><span class="param-name">scope</span></td>
-              <td><span class="param-type">string</span></td>
-              <td><span class="param-default">alltime</span></td>
-              <td class="param-desc">
-                Time window
-                <div class="param-enum">
-                  <span class="enum-val">today</span>
-                  <span class="enum-val">week</span>
-                  <span class="enum-val">alltime</span>
-                  <span class="enum-val">custom</span>
-                </div>
-              </td>
-            </tr>
+            <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><span class="param-default">alltime</span></td><td class="param-desc">Time window — <span class="enum-val">today</span><span class="enum-val">week</span><span class="enum-val">alltime</span><span class="enum-val">custom</span></td></tr>
             <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">0</span></td><td class="param-desc">Only count runs at or above this key level</td></tr>
             <tr><td><span class="param-name">from</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
             <tr><td><span class="param-name">to</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
           </tbody>
         </table>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-          <span class="resp-code resp-4xx">404 Not Found</span>
-          <span class="resp-code resp-4xx">400 Bad Request</span>
-        </div>
-
-        <div class="code-label">Response schema</div>
-        <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">character.region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">character.realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">character.name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">scope</span><span class="schema-type">string</span><span class="schema-note">Resolved scope name</span></div>
-          <div class="schema-row"><span class="schema-field">from</span><span class="schema-type">string (RFC3339)</span><span class="schema-note">Actual window start used</span></div>
-          <div class="schema-row"><span class="schema-field">to</span><span class="schema-type">string (RFC3339)</span><span class="schema-note">Actual window end used</span></div>
-          <div class="schema-row"><span class="schema-field">min_level</span><span class="schema-type">integer</span><span class="schema-note">Filter applied</span></div>
-          <div class="schema-row"><span class="schema-field">count</span><span class="schema-type">integer</span><span class="schema-note">Number of qualifying runs</span></div>
-        </div>
-
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">404 Not Found</span><span class="resp-code resp-4xx">400 Bad Request</span></div>
         <div class="code-label">Example response</div>
         <div class="code-block">{
   <span class="jk">"character"</span>: { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Duhva"</span> },
   <span class="jk">"scope"</span>:     <span class="js">"week"</span>,
-  <span class="jk">"from"</span>:      <span class="js">"2026-05-27T15:00:00Z"</span>,
-  <span class="jk">"to"</span>:        <span class="js">"2026-06-03T21:44:00Z"</span>,
-  <span class="jk">"min_level"</span>: <span class="jn">10</span>,
+  <span class="jk">"from"</span>:      <span class="js">"2026-06-03T13:00:00Z"</span>,
+  <span class="jk">"to"</span>:        <span class="js">"2026-06-06T21:44:00Z"</span>,
+  <span class="jk">"min_level"</span>: <span class="jn">0</span>,
   <span class="jk">"count"</span>:     <span class="jn">8</span>
 }</div>
-
-        <div class="code-label">Example requests <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=week&min_level=10'`)">copy</button></div>
-        <div class="code-block">curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=week&min_level=10'
-curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=today'
-curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=2026-06-01T00:00:00Z&to=2026-06-03T23:59:59Z'</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=week'`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=week&amp;min_level=10'</div>
       </div>
     </div>
 
-    <!-- GET /player/:player_id/keys -->
+    <!-- GET /player/:id/keys -->
     <div class="endpoint" id="ep-player-keys">
       <div class="endpoint-header" onclick="toggle('ep-player-keys')">
         <span class="method method-get">GET</span>
         <span class="endpoint-path">/player/<span class="path-param">:player_id</span>/keys</span>
-        <span class="endpoint-summary">Aggregated run count across all characters for a player</span>
+        <span class="endpoint-summary">Aggregated run count across all alts for a player</span>
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Players are logical owners of one or more characters, defined in <code>config.toml</code> and seeded at startup. This endpoint sums runs across all linked characters for the requested window — useful for tracking one real person who plays multiple alts.</p>
-
+        <p class="ep-desc">Players are logical owners of one or more characters, defined in <code>config.toml</code> and seeded at startup. This endpoint sums runs across all linked characters for the requested window.</p>
         <div class="params-label">Path parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><span class="param-name">player_id</span></td><td><span class="param-type">string</span></td><td class="param-desc">Player ID as defined in <code>config.toml</code>, e.g. <code>player_ash</code></td></tr>
+            <tr><td><span class="param-name">player_id</span></td><td><span class="param-type">string</span></td><td class="param-desc">Player ID from <code>config.toml</code>, e.g. <code>player_ash</code></td></tr>
           </tbody>
         </table>
-
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><span class="param-default">alltime</span></td><td class="param-desc">Same values as character keys endpoint</td></tr>
             <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">0</span></td><td class="param-desc">Minimum key level to count</td></tr>
-            <tr><td><span class="param-name">from</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
-            <tr><td><span class="param-name">to</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required when <code>scope=custom</code></td></tr>
           </tbody>
         </table>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-          <span class="resp-code resp-4xx">404 Not Found</span>
-        </div>
-
-        <div class="code-label">Response schema</div>
-        <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">player_id</span><span class="schema-type">string</span><span class="schema-note">Echoed from path</span></div>
-          <div class="schema-row"><span class="schema-field">label</span><span class="schema-type">string</span><span class="schema-note">Human-readable name from config</span></div>
-          <div class="schema-row"><span class="schema-field">scope</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">from</span><span class="schema-type">string (RFC3339)</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">to</span><span class="schema-type">string (RFC3339)</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">min_level</span><span class="schema-type">integer</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">count</span><span class="schema-type">integer</span><span class="schema-note">Sum across all linked characters</span></div>
-        </div>
-
-        <div class="code-label">Example response</div>
-        <div class="code-block">{
-  <span class="jk">"player_id"</span>: <span class="js">"player_ash"</span>,
-  <span class="jk">"label"</span>:     <span class="js">"Ash"</span>,
-  <span class="jk">"scope"</span>:     <span class="js">"week"</span>,
-  <span class="jk">"from"</span>:      <span class="js">"2026-05-27T15:00:00Z"</span>,
-  <span class="jk">"to"</span>:        <span class="js">"2026-06-03T21:44:00Z"</span>,
-  <span class="jk">"min_level"</span>: <span class="jn">0</span>,
-  <span class="jk">"count"</span>:     <span class="jn">14</span>
-}</div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/player/player_ash/keys?scope=week'`)">copy</button></div>
-        <div class="code-block">curl 'http://localhost:8080/player/player_ash/keys?scope=week'</div>
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">404 Not Found</span></div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' 'http://localhost:8080/player/player_ash/keys?scope=week'`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/player/player_ash/keys?scope=week'</div>
       </div>
     </div>
 
-    <!-- GET /guild/:region/:realm/:name/roster -->
+    <!-- GET /guild roster -->
     <div class="endpoint" id="ep-guild-roster">
       <div class="endpoint-header" onclick="toggle('ep-guild-roster')">
         <span class="method method-get">GET</span>
@@ -946,53 +574,46 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Returns every character in the local database whose <code>guild_name</code> and <code>guild_realm</code> match the requested guild. This is the locally-known roster — run <code>POST /update/guild</code> to sync it from Raider.IO first.</p>
-
-        <div class="params-label">Path parameters</div>
-        <table class="params-table">
-          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td class="param-desc">WoW region</td></tr>
-            <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td class="param-desc">Guild realm</td></tr>
-            <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td class="param-desc">Guild name</td></tr>
-          </tbody>
-        </table>
-
-        <div class="resp-codes">
-          <span class="resp-code resp-2xx">200 OK</span>
-        </div>
-
-        <div class="code-label">Response schema</div>
-        <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">guild.region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">guild.realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">guild.name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">members[].region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">members[].realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">members[].name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">members[].guild_name</span><span class="schema-type">string|null</span><span class="schema-note"></span></div>
-        </div>
-
-        <div class="code-label">Example response</div>
-        <div class="code-block">{
-  <span class="jk">"guild"</span>: { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Seems Good"</span> },
-  <span class="jk">"members"</span>: [
-    { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Duhva"</span>,  <span class="jk">"guild_name"</span>: <span class="js">"Seems Good"</span> },
-    { <span class="jk">"region"</span>: <span class="js">"us"</span>, <span class="jk">"realm"</span>: <span class="js">"Stormrage"</span>, <span class="jk">"name"</span>: <span class="js">"Shadra"</span>, <span class="jk">"guild_name"</span>: <span class="js">"Seems Good"</span> }
-  ]
-}</div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/guild/us/Stormrage/Seems%20Good/roster'`)">copy</button></div>
-        <div class="code-block">curl 'http://localhost:8080/guild/us/Stormrage/Seems%20Good/roster'</div>
+        <p class="ep-desc">Returns every character in the local database whose <code>guild_name</code> and <code>guild_realm</code> match the requested guild. Run <code>POST /update/guild</code> to sync it from Raider.IO first.</p>
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' 'http://localhost:8080/guild/us/Stormrage/Seems%20Good/roster'`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/guild/us/Stormrage/Seems%20Good/roster'</div>
       </div>
     </div>
   </div>
 
-  <!-- ─── DEBUG ─── -->
+  <!-- MANAGEMENT -->
+  <div class="section" id="delete-character">
+    <div class="section-header"><div class="section-title">Management</div></div>
+
+    <!-- DELETE /character -->
+    <div class="endpoint" id="ep-delete-character">
+      <div class="endpoint-header" onclick="toggle('ep-delete-character')">
+        <span class="method method-del">DEL</span>
+        <span class="endpoint-path">/character/<span class="path-param">:region</span>/<span class="path-param">:realm</span>/<span class="path-param">:name</span></span>
+        <span class="endpoint-summary">Remove a character and all their runs from the DB</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="ep-desc">Permanently deletes a character row and all associated runs via cascade. Returns 404 if the character isn't in the database. Characters that return 400 from Raider.IO during <code>POST /update/all</code> are pruned automatically — this endpoint is for manual removal.</p>
+        <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">404 Not Found</span></div>
+        <div class="code-label">Response schema</div>
+        <div class="schema-grid">
+          <div class="schema-row"><span class="schema-field">deleted</span><span class="schema-type">boolean</span><span class="schema-note">Always true on 200</span></div>
+          <div class="schema-row"><span class="schema-field">region / realm / name</span><span class="schema-type">string</span><span class="schema-note">Echoed from path</span></div>
+        </div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -X DELETE -H 'Authorization: Bearer <token>' 'http://localhost:8080/character/us/Stormrage/Showdo'`)">copy</button></div>
+        <div class="code-block">curl -X DELETE -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/character/us/Stormrage/Showdo'</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEBUG -->
   <div class="section" id="debug-stats">
     <div class="section-header"><div class="section-title">Debug Endpoints</div></div>
-    <p class="section-desc">These endpoints expose raw DB contents for development, debugging, and verifying data integrity. They are not intended for production consumers — consider restricting them behind a reverse-proxy or firewall rule in prod.</p>
-    <div class="warn-box"><strong>⚠ Not for production consumers.</strong> These endpoints do full table scans and return potentially large payloads. Protect with a firewall or internal-only routing in production.</div>
+    <p class="section-desc">These endpoints expose raw DB contents for development and verifying data integrity. They are protected by the same bearer token as all other endpoints.</p>
 
     <!-- GET /debug/stats -->
     <div class="endpoint" id="ep-debug-stats">
@@ -1003,23 +624,22 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Returns row counts, today/week run totals, dungeon distribution, key level histogram, and top-20 characters by run count. Useful as a health dashboard and sanity check after crawls.</p>
-
+        <p class="ep-desc">Returns row counts, today/week run totals (timed only), dungeon distribution, key level histogram, and top-20 characters by run count.</p>
         <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
-
         <div class="code-label">Response schema</div>
         <div class="schema-grid">
           <div class="schema-row"><span class="schema-field">total_characters</span><span class="schema-type">integer</span><span class="schema-note">Rows in characters table</span></div>
-          <div class="schema-row"><span class="schema-field">total_runs</span><span class="schema-type">integer</span><span class="schema-note">Rows in runs table</span></div>
+          <div class="schema-row"><span class="schema-field">total_runs</span><span class="schema-type">integer</span><span class="schema-note">Timed runs only</span></div>
           <div class="schema-row"><span class="schema-field">runs_today</span><span class="schema-type">integer</span><span class="schema-note">completed_at ≥ UTC midnight</span></div>
-          <div class="schema-row"><span class="schema-field">runs_this_week</span><span class="schema-type">integer</span><span class="schema-note">completed_at ≥ now - 7 days</span></div>
-          <div class="schema-row"><span class="schema-field">runs_by_dungeon[]</span><span class="schema-type">object[]</span><span class="schema-note">{ dungeon: string, count: integer }</span></div>
-          <div class="schema-row"><span class="schema-field">runs_by_keylevel[]</span><span class="schema-type">object[]</span><span class="schema-note">{ key_level: integer, count: integer }</span></div>
+          <div class="schema-row"><span class="schema-field">runs_this_week</span><span class="schema-type">integer</span><span class="schema-note">completed_at ≥ 7 days ago</span></div>
+          <div class="schema-row"><span class="schema-field">runs_by_dungeon[]</span><span class="schema-type">object[]</span><span class="schema-note">{ dungeon, count }</span></div>
+          <div class="schema-row"><span class="schema-field">runs_by_keylevel[]</span><span class="schema-type">object[]</span><span class="schema-note">{ key_level, count }</span></div>
           <div class="schema-row"><span class="schema-field">top_characters[]</span><span class="schema-type">object[]</span><span class="schema-note">{ name, realm, region, run_count } — top 20</span></div>
         </div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, 'curl http://localhost:8080/debug/stats')">copy</button></div>
-        <div class="code-block">curl http://localhost:8080/debug/stats</div>
+        <div class="try-it">
+          <div class="try-it-header"><span class="try-it-label">Try it</span><button class="try-btn" onclick="tryIt('GET','/debug/stats',null,'try-stats')">Send</button></div>
+          <div class="try-result try-empty" id="try-stats">Click Send to fetch stats</div>
+        </div>
       </div>
     </div>
 
@@ -1032,8 +652,7 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Returns runs across all characters, newest first, with character info joined in. Use this to verify crawls are picking up new runs and that deduplication is working.</p>
-
+        <p class="ep-desc">Returns timed runs across all characters, newest first, with character info joined in.</p>
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
@@ -1042,29 +661,12 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
             <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">0</span></td><td class="param-desc">Minimum key level filter</td></tr>
             <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td><span class="param-default">us</span></td><td class="param-desc">Used to resolve weekly reset when scope=week</td></tr>
             <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td><span class="param-default">200</span></td><td class="param-desc">Max rows returned (hard cap: 1000)</td></tr>
-            <tr><td><span class="param-name">from</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required with <code>scope=custom</code></td></tr>
-            <tr><td><span class="param-name">to</span></td><td><span class="param-type">RFC3339</span></td><td><span class="param-default">—</span></td><td class="param-desc">Required with <code>scope=custom</code></td></tr>
           </tbody>
         </table>
-
         <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
-
-        <div class="code-label">Response — array of run objects</div>
-        <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">integer</span><span class="schema-note">DB row ID</span></div>
-          <div class="schema-row"><span class="schema-field">character_name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">dungeon_short</span><span class="schema-type">string</span><span class="schema-note">RIO short name e.g. <code>MOTS</code>, <code>GB</code></span></div>
-          <div class="schema-row"><span class="schema-field">key_level</span><span class="schema-type">integer</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">completed_at</span><span class="schema-type">string (RFC3339)</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">within_time</span><span class="schema-type">boolean</span><span class="schema-note">True = timed / deplete = false</span></div>
-          <div class="schema-row"><span class="schema-field">url</span><span class="schema-type">string|null</span><span class="schema-note">Raider.IO run URL</span></div>
-          <div class="schema-row"><span class="schema-field">hash</span><span class="schema-type">string</span><span class="schema-note">Dedup hash — unique per run</span></div>
-        </div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/debug/runs?scope=week&min_level=10&limit=50'`)">copy</button></div>
-        <div class="code-block">curl 'http://localhost:8080/debug/runs?scope=week&min_level=10&limit=50'</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' 'http://localhost:8080/debug/runs?scope=week&min_level=10&limit=50'`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/debug/runs?scope=week&amp;min_level=10&amp;limit=50'</div>
       </div>
     </div>
 
@@ -1077,25 +679,22 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Same shape as <code>/debug/runs</code> but filters to characters whose <code>guild_name</code> and <code>guild_realm</code> match the request. Great for confirming your guild crawl captured the right data.</p>
-
+        <p class="ep-desc">Same shape as <code>/debug/runs</code> but filters to characters whose <code>guild_name</code> and <code>guild_realm</code> match the request.</p>
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><span class="param-name">realm</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>—</td><td class="param-desc">Guild realm</td></tr>
             <tr><td><span class="param-name">name</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td>—</td><td class="param-desc">Guild name</td></tr>
-            <tr><td><span class="param-name">region</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">us</span></td><td class="param-desc">Used for weekly reset boundary</td></tr>
             <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">alltime</span></td><td class="param-desc">Time window</td></tr>
             <tr><td><span class="param-name">min_level</span></td><td><span class="param-type">integer</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">0</span></td><td class="param-desc">Minimum key level</td></tr>
             <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td><span class="param-optional">optional</span></td><td><span class="param-default">500</span></td><td class="param-desc">Max rows (hard cap: 2000)</td></tr>
           </tbody>
         </table>
-
         <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span><span class="resp-code resp-4xx">400 Bad Request</span></div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/debug/runs/guild?realm=Stormrage&name=Seems%20Good&scope=week'`)">copy</button></div>
-        <div class="code-block">curl 'http://localhost:8080/debug/runs/guild?realm=Stormrage&name=Seems%20Good&scope=week'</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' 'http://localhost:8080/debug/runs/guild?realm=Stormrage&name=Seems%20Good&scope=week'`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/debug/runs/guild?realm=Stormrage&amp;name=Seems%20Good&amp;scope=week'</div>
       </div>
     </div>
 
@@ -1104,28 +703,14 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
       <div class="endpoint-header" onclick="toggle('ep-debug-characters')">
         <span class="method method-get">GET</span>
         <span class="endpoint-path">/debug/characters</span>
-        <span class="endpoint-summary">All characters with run counts</span>
+        <span class="endpoint-summary">All characters with timed run counts</span>
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Full dump of the <code>characters</code> table with <code>LEFT JOIN</code> run counts. Ordered by run count descending. Use to spot characters with unexpectedly zero runs or verify a guild sync populated the right members.</p>
-
+        <p class="ep-desc">Full dump of the <code>characters</code> table with <code>LEFT JOIN</code> timed-run counts. Ordered by run count descending.</p>
         <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
-
-        <div class="code-label">Response — array of character objects</div>
-        <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">integer</span><span class="schema-note">DB row ID</span></div>
-          <div class="schema-row"><span class="schema-field">region</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">realm</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">name</span><span class="schema-type">string</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">guild_name</span><span class="schema-type">string|null</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">guild_realm</span><span class="schema-type">string|null</span><span class="schema-note"></span></div>
-          <div class="schema-row"><span class="schema-field">last_seen</span><span class="schema-type">string|null (RFC3339)</span><span class="schema-note">Last upsert timestamp</span></div>
-          <div class="schema-row"><span class="schema-field">run_count</span><span class="schema-type">integer</span><span class="schema-note">Total runs for this character in DB</span></div>
-        </div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, 'curl http://localhost:8080/debug/characters')">copy</button></div>
-        <div class="code-block">curl http://localhost:8080/debug/characters</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' http://localhost:8080/debug/characters`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' http://localhost:8080/debug/characters</div>
       </div>
     </div>
 
@@ -1138,8 +723,7 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
         <span class="chevron">▶</span>
       </div>
       <div class="endpoint-body">
-        <p class="ep-desc">Point lookup against the <code>runs.hash</code> unique index. Use this to confirm that a specific run you expected to be inserted actually made it in, or to verify that re-running an update would correctly skip a known run as a duplicate.</p>
-
+        <p class="ep-desc">Point lookup against the <code>runs.hash</code> unique index. Use to confirm that a specific run was inserted, or to verify that re-running an update would correctly skip it as a duplicate.</p>
         <div class="params-label">Query parameters</div>
         <table class="params-table">
           <thead><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
@@ -1147,53 +731,163 @@ curl 'http://localhost:8080/character/us/Stormrage/Duhva/keys?scope=custom&from=
             <tr><td><span class="param-name">hash</span></td><td><span class="param-type">string</span></td><td><span class="param-required">required</span></td><td class="param-desc">The run hash to look up (from <code>/debug/runs</code> <code>hash</code> field)</td></tr>
           </tbody>
         </table>
-
         <div class="resp-codes"><span class="resp-code resp-2xx">200 OK</span></div>
-
-        <div class="code-label">Response schema</div>
-        <div class="schema-grid">
-          <div class="schema-row"><span class="schema-field">hash</span><span class="schema-type">string</span><span class="schema-note">Echoed from query param</span></div>
-          <div class="schema-row"><span class="schema-field">exists</span><span class="schema-type">boolean</span><span class="schema-note">True = run is in DB · False = would be a new insert</span></div>
-        </div>
-
-        <div class="code-label">Example response — exists</div>
-        <div class="code-block">{ <span class="jk">"hash"</span>: <span class="js">"sha256:abc123..."</span>, <span class="jk">"exists"</span>: <span class="jb">true</span>  }</div>
-
-        <div class="code-label">Example response — not found</div>
-        <div class="code-block">{ <span class="jk">"hash"</span>: <span class="js">"sha256:xyz789..."</span>, <span class="jk">"exists"</span>: <span class="jb">false</span> }</div>
-
-        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl 'http://localhost:8080/debug/hash-check?hash=sha256:abc123'`)">copy</button></div>
-        <div class="code-block">curl 'http://localhost:8080/debug/hash-check?hash=sha256:abc123...'</div>
+        <div class="code-label">Example request <button class="copy-btn" onclick="copyText(this, `curl -H 'Authorization: Bearer <token>' 'http://localhost:8080/debug/hash-check?hash=abc123...'`)">copy</button></div>
+        <div class="code-block">curl -H 'Authorization: Bearer &lt;token&gt;' \
+  'http://localhost:8080/debug/hash-check?hash=abc123...'</div>
       </div>
     </div>
-  </div>
 
+  </div><!-- debug section -->
 </div><!-- .main -->
 </div><!-- .layout -->
 
 <script>
-function toggle(id) {
-  document.getElementById(id).classList.toggle('open');
+const KEY_TOKEN = 'mpt_token';
+const KEY_URL   = 'mpt_base_url';
+
+// ── Config helpers ────────────────────────────────────────────────────────────
+
+function getToken() { return sessionStorage.getItem(KEY_TOKEN) || ''; }
+function getBase()  { return (sessionStorage.getItem(KEY_URL) || 'http://localhost:8080').replace(/\/$/, ''); }
+
+function saveConfig() {
+  const url   = document.getElementById('sidebarUrl').value.trim().replace(/\/$/, '');
+  const token = document.getElementById('sidebarToken').value.trim();
+  if (url)   sessionStorage.setItem(KEY_URL,   url);
+  if (token) sessionStorage.setItem(KEY_TOKEN, token);
+  else       sessionStorage.removeItem(KEY_TOKEN);
+  updateAuthUI();
 }
 
-function scrollTo(id) {
-  // Try ep- prefix first, then section id
+function updateAuthUI() {
+  const token = getToken();
+  const base  = getBase();
+
+  // sidebar dot + status
+  const dot = document.getElementById('sidebarDot');
+  const status = document.getElementById('sidebarStatus');
+  if (token) {
+    dot.className = 'auth-dot set';
+    status.textContent = `token set · ${token.length} chars`;
+    status.style.color = 'var(--green)';
+  } else {
+    dot.className = 'auth-dot unset';
+    status.textContent = 'not configured';
+    status.style.color = 'var(--red)';
+  }
+
+  // hero chips
+  document.getElementById('hero-url-text').textContent = base;
+  const authChip = document.getElementById('hero-auth-chip');
+  const authText = document.getElementById('hero-auth-text');
+  if (token) {
+    authChip.className = 'hero-chip chip-set';
+    authText.textContent = `✓ token set (${token.length} chars)`;
+  } else {
+    authChip.className = 'hero-chip chip-unset';
+    authText.textContent = '⚠ not set — click to configure';
+  }
+
+  // update auth example block
+  const block = document.getElementById('auth-example-block');
+  if (block) block.textContent = `curl -H 'Authorization: Bearer ${token||'<token>'}' '${base}/debug/stats'`;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+
+function openModal() {
+  document.getElementById('modalUrl').value   = getBase();
+  document.getElementById('modalToken').value = getToken();
+  document.getElementById('modalErr').textContent = '';
+  document.getElementById('authModal').classList.remove('hidden');
+  document.getElementById('modalToken').focus();
+}
+
+function closeModal() {
+  document.getElementById('authModal').classList.add('hidden');
+}
+
+function submitAuth() {
+  const url   = document.getElementById('modalUrl').value.trim().replace(/\/$/, '');
+  const token = document.getElementById('modalToken').value.trim();
+  if (!token) { document.getElementById('modalErr').textContent = 'Token is required.'; return; }
+  sessionStorage.setItem(KEY_URL, url);
+  sessionStorage.setItem(KEY_TOKEN, token);
+  document.getElementById('sidebarUrl').value   = url;
+  document.getElementById('sidebarToken').value = token;
+  updateAuthUI();
+  closeModal();
+}
+
+document.getElementById('modalToken').addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
+document.getElementById('authModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+// ── Endpoint toggle ───────────────────────────────────────────────────────────
+
+function toggle(id) { document.getElementById(id).classList.toggle('open'); }
+
+function scrollToSection(id) {
   const el = document.getElementById('ep-' + id) || document.getElementById(id);
   if (!el) return;
-  el.classList.add('open');
+  if (el.classList.contains('endpoint')) el.classList.add('open');
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   event.currentTarget.classList.add('active');
 }
 
+// ── Try it ────────────────────────────────────────────────────────────────────
+
+async function tryIt(method, path, body, resultId) {
+  const el = document.getElementById(resultId);
+  el.className = 'try-result';
+  el.textContent = 'Sending…';
+
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  try {
+    const opts = { method, headers };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(getBase() + path, opts);
+    const text = await r.text();
+    let parsed;
+    try { parsed = JSON.parse(text); } catch { parsed = text; }
+    el.className = r.ok ? 'try-result try-ok' : 'try-result try-err';
+    el.textContent = `HTTP ${r.status}\n\n` + (typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : parsed);
+  } catch (e) {
+    el.className = 'try-result try-err';
+    el.textContent = `Network error: ${e.message}`;
+  }
+}
+
+// ── Copy ──────────────────────────────────────────────────────────────────────
+
 function copyText(btn, text) {
+  // Replace placeholder token with real one if set
+  const token = getToken();
+  if (token) text = text.replace(/<token>/g, token);
+  text = text.replace(/http:\/\/localhost:8080/g, getBase());
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'copied!';
-    btn.classList.add('copied');
+    btn.textContent = 'copied!'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
   });
 }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+(function init() {
+  const savedToken = sessionStorage.getItem(KEY_TOKEN);
+  const savedUrl   = sessionStorage.getItem(KEY_URL);
+  if (savedUrl)   document.getElementById('sidebarUrl').value   = savedUrl;
+  if (savedToken) document.getElementById('sidebarToken').value = savedToken;
+
+  updateAuthUI();
+
+  // Show modal on first visit (no token saved)
+  if (!savedToken) openModal();
+})();
 </script>
 </body>
 </html>

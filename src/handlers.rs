@@ -152,7 +152,7 @@ pub async fn post_update_character(
         },
         runs_inserted: result.runs_inserted,
         runs_ignored: result.runs_ignored,
-        rate_limited: false, // backoff handled internally; request succeeded by the time we're here
+        rate_limited: false,
     }))
 }
 
@@ -164,6 +164,7 @@ pub struct UpdateAllResponse {
     pub total_characters: usize,
     pub updated_ok: usize,
     pub failed: usize,
+    pub pruned: usize,
     pub errors: Vec<String>,
 }
 
@@ -178,7 +179,43 @@ pub async fn post_update_all(
         total_characters: result.total_characters,
         updated_ok: result.updated_ok,
         failed: result.failed,
+        pruned: result.pruned,
         errors: result.errors,
+    }))
+}
+
+// ─── DELETE /character/{region}/{realm}/{name} ────────────────────────────────
+
+#[derive(Serialize)]
+pub struct DeleteCharacterResponse {
+    pub deleted: bool,
+    pub region: String,
+    pub realm: String,
+    pub name: String,
+}
+
+#[instrument(skip(state))]
+pub async fn delete_character(
+    State(state): State<AppState>,
+    Path((region, realm, name)): Path<(String, String, String)>,
+) -> Result<impl IntoResponse, AppErr> {
+    let deleted = state
+        .db
+        .delete_character(&region, &realm, &name)
+        .await
+        .map_err(AppErr::from)?;
+
+    if !deleted {
+        not_found!(format!(
+            "Character {name} on {realm}-{region} not found in DB"
+        ));
+    }
+
+    Ok(Json(DeleteCharacterResponse {
+        deleted: true,
+        region,
+        realm,
+        name,
     }))
 }
 
@@ -368,7 +405,6 @@ fn parse_optional_dt(s: Option<&str>) -> Result<Option<DateTime<chrono::Utc>>, A
 }
 
 // ─── GET /debug/runs ──────────────────────────────────────────────────────────
-// Query params: scope (today|week|alltime|custom), from, to, min_level, limit
 
 #[derive(Deserialize, Debug)]
 pub struct DebugRunsQuery {
@@ -511,7 +547,6 @@ pub async fn get_debug_guild_runs(
 }
 
 // ─── GET /debug/hash-check ────────────────────────────────────────────────────
-// Verify a specific run hash already exists in the DB.
 
 #[derive(Deserialize, Debug)]
 pub struct HashCheckQuery {
@@ -535,4 +570,124 @@ pub async fn get_debug_hash_check(
         .await
         .map_err(AppErr::from)?;
     Ok(Json(HashCheckResponse { hash: query.hash, exists }))
+}
+
+// ─── GET /players ─────────────────────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct PlayerEntry {
+    pub id: String,
+    pub label: String,
+    pub character_count: usize,
+}
+
+#[derive(Serialize)]
+pub struct PlayersResponse {
+    pub players: Vec<PlayerEntry>,
+}
+
+#[instrument(skip(state))]
+pub async fn get_players(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppErr> {
+    let all = state.db.get_all_players().await.map_err(AppErr::from)?;
+
+    let players = all
+        .into_iter()
+        .map(|(player, char_ids)| PlayerEntry {
+            id: player.id,
+            label: player.label,
+            character_count: char_ids.len(),
+        })
+        .collect();
+
+    Ok(Json(PlayersResponse { players }))
+}
+
+// ─── GET /leaderboard ────────────────────────────────────────────────────────
+
+#[derive(Serialize, Clone)]
+pub struct LeaderboardEntry {
+    pub display_name: String,
+    pub player_id:    Option<String>,
+    pub count:        i64,
+    pub is_player:    bool,
+}
+
+#[derive(Serialize)]
+pub struct LeaderboardResponse {
+    pub scope:    String,
+    pub from:     String,
+    pub to:       String,
+    pub min_level: i64,
+    pub entries:  Vec<LeaderboardEntry>,
+}
+
+#[instrument(skip(state))]
+pub async fn get_leaderboard(
+    State(state): State<AppState>,
+    Query(query): Query<KeysQuery>,
+) -> Result<impl IntoResponse, AppErr> {
+    let custom_from = parse_optional_dt(query.from.as_deref())?;
+    let custom_to   = parse_optional_dt(query.to.as_deref())?;
+    let window = TimeWindow::resolve(query.scope, Some("us"), custom_from, custom_to)
+        .map_err(|e| AppErr(StatusCode::BAD_REQUEST, e.to_string()))?;
+    let min_level = query.min_level.unwrap_or(0);
+
+    let entries = state
+        .db
+        .get_leaderboard_all(window.from, window.to, min_level)
+        .await
+        .map_err(AppErr::from)?;
+
+    Ok(Json(LeaderboardResponse {
+        scope:     format!("{:?}", query.scope).to_lowercase(),
+        from:      window.from.to_rfc3339(),
+        to:        window.to.to_rfc3339(),
+        min_level,
+        entries,
+    }))
+}
+
+// ─── GET /debug/depletions ────────────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct DepletionEntry {
+    pub name:           String,
+    pub realm:          String,
+    pub region:         String,
+    pub depleted_count: i64,
+}
+
+#[derive(Serialize)]
+pub struct DepletionsResponse {
+    pub scope:   String,
+    pub from:    String,
+    pub to:      String,
+    pub entries: Vec<DepletionEntry>,
+}
+
+#[instrument(skip(state))]
+pub async fn get_debug_depletions(
+    State(state): State<AppState>,
+    Query(query): Query<DebugRunsQuery>,
+) -> Result<impl IntoResponse, AppErr> {
+    let custom_from = parse_optional_dt(query.from.as_deref())?;
+    let custom_to   = parse_optional_dt(query.to.as_deref())?;
+    let window = TimeWindow::resolve(query.scope, query.region.as_deref(), custom_from, custom_to)
+        .map_err(|e| AppErr(StatusCode::BAD_REQUEST, e.to_string()))?;
+    let limit = query.limit.unwrap_or(50).min(200);
+
+    let entries = state
+        .db
+        .get_depletions(window.from, window.to, limit)
+        .await
+        .map_err(AppErr::from)?;
+
+    Ok(Json(DepletionsResponse {
+        scope:   format!("{:?}", query.scope).to_lowercase(),
+        from:    window.from.to_rfc3339(),
+        to:      window.to.to_rfc3339(),
+        entries,
+    }))
 }

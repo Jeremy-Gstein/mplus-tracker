@@ -1,2 +1,8 @@
-target/
-target/**
+# Build output
+/target/
+
+# Cargo.lock
+
+# Environment / secrets
+.env
+.env.*
