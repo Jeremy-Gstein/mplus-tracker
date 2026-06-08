@@ -8,7 +8,7 @@
 
 use axum::{
     body::Body,
-    http::{Request, Response, StatusCode},
+    http::{Method, Request, Response, StatusCode},
     response::IntoResponse,
 };
 use futures::future::BoxFuture;
@@ -66,6 +66,11 @@ where
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         // Always allow /health through — no token needed for healthchecks
         if req.uri().path() == "/health" {
+            let fut = self.inner.call(req);
+            return Box::pin(async move { fut.await });
+        }
+        // Always allow OPTIONS header. (allows CORS on authorized endpoints from other origins.)
+        if req.method() == Method::OPTIONS {
             let fut = self.inner.call(req);
             return Box::pin(async move { fut.await });
         }
