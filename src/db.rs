@@ -60,6 +60,11 @@ impl Database {
     // ─── Characters ──────────────────────────────────────────────────────────
 
     /// Upsert a character; returns its DB id.
+    ///
+    /// `region`, `realm`, and `name` are normalised to lowercase before storage
+    /// so that casing differences between Raider.IO API responses (which vary
+    /// between endpoints) and `config.toml` entries never produce duplicate rows
+    /// or broken player-character links.
     pub async fn upsert_character(
         &self,
         region: &str,
@@ -68,6 +73,11 @@ impl Database {
         guild_name: Option<&str>,
         guild_realm: Option<&str>,
     ) -> Result<i64> {
+        let region = region.to_lowercase();
+        let realm  = realm.to_lowercase();
+        let name   = name.to_lowercase();
+        let guild_realm = guild_realm.map(|s| s.to_lowercase());
+
         let now = Utc::now();
         let row = sqlx::query(
             r#"
@@ -80,11 +90,11 @@ impl Database {
             RETURNING id
             "#,
         )
-        .bind(region)
-        .bind(realm)
-        .bind(name)
+        .bind(&region)
+        .bind(&realm)
+        .bind(&name)
         .bind(guild_name)
-        .bind(guild_realm)
+        .bind(guild_realm.as_deref())
         .bind(now)
         .fetch_one(&self.pool)
         .await
@@ -100,9 +110,9 @@ impl Database {
         name: &str,
     ) -> Result<Option<i64>> {
         let row = sqlx::query("SELECT id FROM characters WHERE region=? AND realm=? AND name=?")
-            .bind(region)
-            .bind(realm)
-            .bind(name)
+            .bind(region.to_lowercase())
+            .bind(realm.to_lowercase())
+            .bind(name.to_lowercase())
             .fetch_optional(&self.pool)
             .await?;
         Ok(row.map(|r| r.get(0)))
@@ -118,9 +128,9 @@ impl Database {
             "SELECT id, region, realm, name, guild_name, guild_realm, last_seen \
              FROM characters WHERE region=? AND realm=? AND name=?",
         )
-        .bind(region)
-        .bind(realm)
-        .bind(name)
+        .bind(region.to_lowercase())
+        .bind(realm.to_lowercase())
+        .bind(name.to_lowercase())
         .fetch_optional(&self.pool)
         .await?;
         Ok(row)
@@ -184,6 +194,7 @@ impl Database {
     ///
     /// Returns the number of newly-created links (0 means all were already
     /// present or no matches were found).
+    #[allow(dead_code)] // available for a future POST /admin/repair-links endpoint
     pub async fn backfill_player_links(
         &self,
         player_id: &str,

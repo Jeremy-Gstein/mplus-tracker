@@ -37,18 +37,23 @@ pub struct Run {
 }
 
 // ─── Raider.IO API response shapes ───────────────────────────────────────────
+//
+// These structs are populated entirely by serde_json during API response
+// deserialization.  Rust's dead-code lint doesn't see serde field access,
+// so fields that aren't explicitly read in business logic are flagged even
+// though they must be present for correct deserialization.
 
 #[derive(Debug, Deserialize)]
 pub struct RioCharacterProfile {
-    pub name: String,
-    pub realm: String,
-    pub region: String,
+    #[allow(dead_code)] pub name: String,
+    #[allow(dead_code)] pub realm: String,
+    #[allow(dead_code)] pub region: String,
     pub mythic_plus_recent_runs: Option<Vec<RioRun>>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RioRun {
-    pub dungeon: String,
+    #[allow(dead_code)] pub dungeon: String, // short_name is used; dungeon is the long form kept for completeness
     pub short_name: String,
     pub mythic_level: i64,
     pub completed_at: String,
@@ -59,16 +64,16 @@ pub struct RioRun {
 
 #[derive(Debug, Deserialize)]
 pub struct RioGuildProfile {
-    pub name: String,
-    pub realm: String,
-    pub region: String,
+    #[allow(dead_code)] pub name: String,
+    #[allow(dead_code)] pub realm: String,
+    #[allow(dead_code)] pub region: String,
     pub members: Option<Vec<RioGuildMember>>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RioGuildMember {
     pub character: RioMemberCharacter,
-    pub rank: Option<i64>,
+    #[allow(dead_code)] pub rank: Option<i64>, // available for future rank-gating features
 }
 
 #[derive(Debug, Deserialize)]
@@ -108,6 +113,7 @@ pub struct ApiError {
     pub code: u16,
 }
 
+#[allow(dead_code)] // complete error constructor set; not all variants are used in every handler yet
 impl ApiError {
     pub fn not_found(msg: impl Into<String>) -> Self {
         Self { error: msg.into(), code: 404 }

@@ -2,7 +2,6 @@
 
 use anyhow::{Context, Result};
 use serde::Deserialize;
-use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -11,6 +10,7 @@ pub struct Config {
     pub server: ServerConfig,
     pub concurrency: ConcurrencyConfig,
     #[serde(default)]
+    #[allow(dead_code)] // parsed from config.toml for completeness; guild updates are triggered via POST endpoints
     pub guilds: Vec<GuildConfig>,
     #[serde(default)]
     pub players: Vec<PlayerConfig>,
@@ -55,6 +55,7 @@ pub struct ConcurrencyConfig {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)] // fields parsed from config.toml; used via serde, not direct field access
 pub struct GuildConfig {
     pub region: String,
     pub realm: String,

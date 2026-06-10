@@ -73,6 +73,7 @@ pub struct GuildUpdateResult {
     /// Members whose Raider.IO `last_crawled_at` is recent enough that we
     /// skipped queuing a key-data update for them.
     pub members_skipped_fresh: usize,
+    #[allow(dead_code)] // populated for future use in guild roster API responses
     pub members: Vec<CharacterSummary>,
 }
 
