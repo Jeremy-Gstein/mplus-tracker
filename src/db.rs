@@ -160,6 +160,54 @@ impl Database {
         Ok(())
     }
 
+    /// Upsert a character row (creating it if absent) and immediately link it
+    /// to `player_id`.  Safe to call repeatedly — both the character upsert and
+    /// the link are idempotent.  This is the canonical way to associate a
+    /// config-declared character with its player, because it works regardless of
+    /// whether the character row was already created by a guild roster pull.
+    pub async fn upsert_and_link_character(
+        &self,
+        player_id: &str,
+        region: &str,
+        realm: &str,
+        name: &str,
+    ) -> Result<()> {
+        let char_id = self.upsert_character(region, realm, name, None, None).await?;
+        self.link_player_character(player_id, char_id).await?;
+        Ok(())
+    }
+
+    /// Scan every existing character row whose (region, realm, name) matches an
+    /// entry in `chars` and ensure it is linked to `player_id`.  Used during
+    /// guild roster pulls to retroactively link characters that were inserted
+    /// before the player mapping existed (or before the config was updated).
+    ///
+    /// Returns the number of newly-created links (0 means all were already
+    /// present or no matches were found).
+    pub async fn backfill_player_links(
+        &self,
+        player_id: &str,
+        chars: &[(String, String, String)], // (region, realm, name)
+    ) -> Result<usize> {
+        let mut linked = 0usize;
+        for (region, realm, name) in chars {
+            if let Some(char_id) = self.find_character_id(region, realm, name).await? {
+                // INSERT OR IGNORE: only counts when a row is actually inserted.
+                let result = sqlx::query(
+                    "INSERT OR IGNORE INTO player_characters (player_id, character_id) VALUES (?, ?)",
+                )
+                .bind(player_id)
+                .bind(char_id)
+                .execute(&self.pool)
+                .await?;
+                if result.rows_affected() > 0 {
+                    linked += 1;
+                }
+            }
+        }
+        Ok(linked)
+    }
+
     pub async fn get_player(&self, player_id: &str) -> Result<Option<Player>> {
         let row = sqlx::query_as::<_, Player>("SELECT id, label FROM players WHERE id=?")
             .bind(player_id)
@@ -597,6 +645,10 @@ impl Database {
             let count = self
                 .count_runs_for_characters(&char_ids, from, to, min_level)
                 .await?;
+
+            // Skip players who have no runs in this window — they would
+            // otherwise clutter the bottom of the leaderboard with 0-key rows.
+            if count == 0 { continue; }
 
             entries.push(crate::handlers::LeaderboardEntry {
                 display_name: player.label.clone(),

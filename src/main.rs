@@ -141,20 +141,23 @@ async fn main() -> Result<()> {
 }
 
 /// On startup, upsert every player and character declared in config.toml.
+///
+/// `upsert_and_link_character` is used instead of a bare `upsert_character` +
+/// `link_player_character` pair so that characters which were already inserted
+/// by a guild-roster pull (before the player mapping existed) get their link
+/// created retroactively.  Both operations are idempotent, so this is safe to
+/// run on every boot.
 async fn seed_from_config(db: &Database, config: &Config) -> Result<()> {
     for player in &config.players {
         db.upsert_player(&player.id, &player.label).await?;
         for char_ref in &player.characters {
-            let char_id = db
-                .upsert_character(
-                    &char_ref.region,
-                    &char_ref.realm,
-                    &char_ref.name,
-                    None,
-                    None,
-                )
-                .await?;
-            db.link_player_character(&player.id, char_id).await?;
+            db.upsert_and_link_character(
+                &player.id,
+                &char_ref.region,
+                &char_ref.realm,
+                &char_ref.name,
+            )
+            .await?;
         }
         info!(
             player_id = %player.id,

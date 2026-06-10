@@ -85,10 +85,36 @@ pub async fn update_guild(
     let _permit = state.semaphore.acquire().await?;
     let profile = state.rio.get_guild_profile(region, realm, name).await?;
 
+    // Build a lookup: (region, realm, name) → player_id for every character
+    // declared in config.  This lets us auto-link roster members that belong to
+    // a player the moment they are upserted, regardless of whether seed_from_config
+    // ran before or after this guild pull.
+    //
+    // Keys are lowercased so the match is case-insensitive — Raider.IO may
+    // capitalise realm/name differently from what's in config.toml.
+    let player_map: std::collections::HashMap<(String, String, String), String> = state
+        .config
+        .players
+        .iter()
+        .flat_map(|p| {
+            p.characters.iter().map(move |c| {
+                (
+                    (
+                        c.region.to_lowercase(),
+                        c.realm.to_lowercase(),
+                        c.name.to_lowercase(),
+                    ),
+                    p.id.clone(),
+                )
+            })
+        })
+        .collect();
+
     let members_raw = profile.members.unwrap_or_default();
     let mut added = 0usize;
     let mut updated = 0usize;
     let mut skipped_fresh = 0usize;
+    let mut auto_linked = 0usize;
     let mut summaries = Vec::new();
 
     for member in &members_raw {
@@ -112,7 +138,7 @@ pub async fn update_guild(
             );
             skipped_fresh += 1;
             // Still upsert into DB so we track roster membership.
-            let _ = state
+            let char_id = state
                 .db
                 .upsert_character(
                     char_region,
@@ -122,6 +148,25 @@ pub async fn update_guild(
                     Some(realm),
                 )
                 .await?;
+
+            // Auto-link if this character is declared under a player in config.
+            let key = (
+                char_region.to_lowercase(),
+                member.character.realm.to_lowercase(),
+                member.character.name.to_lowercase(),
+            );
+            if let Some(player_id) = player_map.get(&key) {
+                let result = state.db.link_player_character(player_id, char_id).await;
+                if result.is_ok() {
+                    auto_linked += 1;
+                    info!(
+                        character = %member.character.name,
+                        player_id = %player_id,
+                        "Auto-linked roster member to player"
+                    );
+                }
+            }
+
             summaries.push(CharacterSummary {
                 region: char_region.to_string(),
                 realm: member.character.realm.clone(),
@@ -136,7 +181,7 @@ pub async fn update_guild(
             .find_character_id(char_region, &member.character.realm, &member.character.name)
             .await?;
 
-        let _id = state
+        let char_id = state
             .db
             .upsert_character(
                 char_region,
@@ -151,6 +196,24 @@ pub async fn update_guild(
             updated += 1;
         } else {
             added += 1;
+        }
+
+        // Auto-link if this character is declared under a player in config.
+        let key = (
+            char_region.to_lowercase(),
+            member.character.realm.to_lowercase(),
+            member.character.name.to_lowercase(),
+        );
+        if let Some(player_id) = player_map.get(&key) {
+            let result = state.db.link_player_character(player_id, char_id).await;
+            if result.is_ok() {
+                auto_linked += 1;
+                info!(
+                    character = %member.character.name,
+                    player_id = %player_id,
+                    "Auto-linked roster member to player"
+                );
+            }
         }
 
         summaries.push(CharacterSummary {
@@ -168,6 +231,7 @@ pub async fn update_guild(
         added,
         updated,
         skipped_fresh,
+        auto_linked,
         "Guild updated"
     );
 
