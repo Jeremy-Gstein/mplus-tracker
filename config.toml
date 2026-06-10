@@ -40,21 +40,273 @@ name   = "seems good"
 # Characters listed here are seeded into the DB on every startup.
 # Use POST /update/character or POST /update/all to pull their run data.
 
-#[[players]]
-#id    = "player_ash"
-#label = "Ash"
+[[players]]
+id    = "player_delulu"
+label = "Delulu"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Delusionol"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Boomlulu"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Brewuwu"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Delusionil"
 
-#[[players.characters]]
-#region = "us"
-#realm  = "area-52"
-#name   = "Ashmain"
+[[players]]
+id    = "player_infi"
+label = "Infi"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Infilicious"
+[[players.characters]]
+region = "us"
+realm  = "azshara"
+name   = "Infi"
 
-#[[players.characters]]
-#region = "us"
-#realm  = "area-52"
-#name   = "Ashalt"
+[[players]]
+id    = "player_dub"
+label = "Dub"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubshamm"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Blasticleez"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dezstro"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubblood"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubbrew"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubchoco"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubdrake"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dublock"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubpyro"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Dubthrash"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Duhpalewad"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Fliptwisty"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Shipshafterz"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Stompcity"
+
+[[players]]
+id    = "player_roger"
+label = "Roger"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Rogergrowth"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Rogerfarmer"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Rogermeta"
+
+[[players]]
+id    = "player_ppd"
+label = "Ppd"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Ppddk"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Ppdx"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Ppddh"
+
+[[players]]
+id    = "player_cryptic"
+label = "Cryptic"
+[[players.characters]]
+region = "us"
+realm  = "firetree"
+name   = "Crypticdh"
+[[players.characters]]
+region = "us"
+realm  = "firetree"
+name   = "Crypticism"
+[[players.characters]]
+region = "us"
+realm  = "firetree"
+name   = "Crypticist"
+
+[[players]]
+id    = "player_ladora"
+label = "Ladora"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Drudora"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Holydora"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Ladoradh"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Ladorah"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Ladorax"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Subdora"
+
+[[players]]
+id    = "player_whare"
+label = "Whare"
+[[players.characters]]
+region = "us"
+realm  = "illidan"
+name   = "Whare"
+[[players.characters]]
+region = "us"
+realm  = "illidan"
+name   = "Hardwhare"
+[[players.characters]]
+region = "us"
+realm  = "illidan"
+name   = "Bewhare"
+
+[[players]]
+id    = "player_eve"
+label = "Eve"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Evelianne"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Evevian"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Evieanne"
+
+[[players]]
+id    = "player_oldman"
+label = "Oldman"
+[[players.characters]]
+region = "us"
+realm  = "illidan"
+name   = "Oldmanzand"
+
+[[players]]
+id    = "player_pip"
+label = "Pip"
+[[players.characters]]
+region = "us"
+realm  = "tichondrius"
+name   = "Pipfi"
+[[players.characters]]
+region = "us"
+realm  = "tichondrius"
+name   = "Pipmeow"
+[[players.characters]]
+region = "us"
+realm  = "tichondrius"
+name   = "Piptide"
+[[players.characters]]
+region = "us"
+realm  = "tichondrius"
+name   = "Pipwiest"
+
+[[players]]
+id    = "player_shodo"
+label = "Shodo"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Notshodo"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Showo"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Shodos"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Shodoword"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Sodo"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Shdo"
+
+[[players]]
+id    = "player_smooth"
+label = "Smooth"
+[[players.characters]]
+region = "us"
+realm  = "stormrage"
+name   = "Obiscuit"
 
 
+
+# EXAMPLE - 
 # [[players]]
 # id    = "player_bob"
 # label = "Bob"
