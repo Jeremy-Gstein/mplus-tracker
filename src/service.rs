@@ -278,16 +278,13 @@ pub async fn update_character(
     let mut ignored = 0usize;
 
     for rio_run in profile.mythic_plus_recent_runs.unwrap_or_default() {
-        // Only track timed (non-depleted) runs
-        if rio_run.num_keystone_upgrades == 0 {
-            ignored += 1;
-            debug!(
-                dungeon = %rio_run.short_name,
-                level   = rio_run.mythic_level,
-                "Skipping depleted run (num_keystone_upgrades=0)"
-            );
-            continue;
-        }
+        // FIX: previously this block did `if num_keystone_upgrades == 0 { continue; }`
+        // and hardcoded `within_time: true` below, which meant depleted keys
+        // were *never written to the DB at all*. That silently starved
+        // `/debug/depletions` (WHERE within_time = 0) of any rows to sort,
+        // which looked like a broken sort but was actually missing data.
+        // We now store every run (timed or depleted) and record the real
+        // within_time value so downstream queries have accurate data to work with.
 
         let source_run_id = match &rio_run.id {
             Some(serde_json::Value::Number(n)) => Some(n.to_string()),
@@ -318,12 +315,22 @@ pub async fn update_character(
             }
         };
 
+        let within_time = rio_run.num_keystone_upgrades > 0;
+
+        if !within_time {
+            debug!(
+                dungeon = %rio_run.short_name,
+                level   = rio_run.mythic_level,
+                "Recording depleted run (num_keystone_upgrades=0)"
+            );
+        }
+
         let run = Run {
             character_id: char_id,
             dungeon_short: rio_run.short_name.clone(),
             key_level: rio_run.mythic_level,
             completed_at,
-            within_time: true, // guaranteed by the num_keystone_upgrades > 0 gate above
+            within_time,
             season: None,
             url: rio_run.url.clone(),
             source_run_id: source_run_id.clone(),
